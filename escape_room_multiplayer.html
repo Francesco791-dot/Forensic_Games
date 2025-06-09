@@ -1,0 +1,2773 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operazione Darknet - Escape Room Multiplayer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .terminal-header {
+            background: #000;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .player-status {
+            background: linear-gradient(135deg, #001a2e, #003366);
+            border: 2px solid #00aaff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .room {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .room.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .evidence-img {
+            background: #222;
+            border: 2px solid #ff6b6b;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-line;
+            color: #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+
+        .forensic-lab {
+            background: #001a2e;
+            border: 2px solid #00aaff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            color: #00aaff;
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .blockchain-visual {
+            background: #001122;
+            border: 2px solid #00aaff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #00aaff;
+            font-family: monospace;
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+        }
+
+        .hash-analyzer {
+            background: #0a0a2e;
+            border: 2px solid #ff6600;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            color: #ffff00;
+            font-family: monospace;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .decoder-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid #333;
+            white-space: pre-line;
+            min-height: 100px;
+        }
+
+        .hash-display {
+            background: #000;
+            color: #ff6600;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid #ff6600;
+            white-space: pre-line;
+            word-break: break-all;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+        }
+
+        .copy-text {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #ffff00;
+            font-family: monospace;
+        }
+
+        .copy-text:hover {
+            background: #333;
+            border-color: #777;
+        }
+
+        .step-indicator {
+            background: #003d00;
+            border-left: 4px solid #00ff00;
+            padding: 10px;
+            margin: 10px 0;
+            color: #ccffcc;
+        }
+
+        .hint-box {
+            background: #2a2a00;
+            border: 2px solid #ffff00;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #ffff00;
+        }
+
+        .input-group {
+            margin: 20px 0;
+        }
+
+        input[type="text"], input[type="password"] {
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            width: 300px;
+            margin-right: 10px;
+        }
+
+        input[type="range"] {
+            margin: 10px;
+            width: 200px;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #00cc00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .forensic-button {
+            background: #ff6600;
+            color: white;
+        }
+
+        .forensic-button:hover {
+            background: #ff8800;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.7);
+        }
+
+        .dashboard-button {
+            background: linear-gradient(135deg, #ff0066, #ff6600);
+            color: white;
+            font-size: 16px;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            box-shadow: 0 0 20px rgba(255, 0, 102, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .dashboard-button:hover {
+            background: linear-gradient(135deg, #ff0080, #ff8800);
+            box-shadow: 0 0 30px rgba(255, 0, 102, 0.8);
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 102, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 0, 102, 0.8); }
+        }
+
+        .lab-access-button {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            text-decoration: none;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .lab-access-button:hover {
+            background: linear-gradient(135deg, #00cc00, #00aa00);
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .progress-bar {
+            background: #333;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #00ff00, #00aa00);
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .hint-button {
+            background: #ff6600;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2e;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #ff6b6b;
+        }
+
+        .error {
+            color: #ff4444;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .success {
+            color: #44ff44;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .waiting-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .waiting-content {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00aaff;
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+        }
+
+        .leaderboard-mini {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00aaff;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .game-disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+
+
+  var firebaseConfig = {
+				apiKey: "AIzaSyC5vtdGImHxZ4TsorOku8IfpwBQjmuk9YM",
+				authDomain: "escape-room-crimson-tide.firebaseapp.com",
+				databaseURL: "https://escape-room-crimson-tide-default-rtdb.europe-west1.firebasedatabase.app",
+				projectId: "escape-room-crimson-tide",
+				storageBucket: "escape-room-crimson-tide.firebasestorage.app",
+				messagingSenderId: "812631357927",
+				appId: "1:812631357927:web:6d6cf5a516fff03bf7e542"
+    </style>
+</head>
+<body>
+    <div class="timer" id="timer">00:00</div>
+    <button class="hint-button" onclick="showHint()">💡</button>
+
+    <!-- Schermata di attesa -->
+    <div class="waiting-screen" id="waitingScreen">
+        <div class="waiting-content">
+            <h1>🕵️ OPERAZIONE DARKNET - LAB FORENSE DIGITALE</h1>
+            <h2 style="color: #00aaff;">Sistema Multigiocatore</h2>
+            
+            <div style="margin: 30px 0;">
+                <div style="background: #001a2e; padding: 20px; border-radius: 10px; border: 2px solid #ff6600;">
+                    <h3>👤 REGISTRAZIONE AGENTE</h3>
+                    <div style="margin: 15px 0;">
+                        <input type="text" id="playerNameInput" placeholder="Inserisci il tuo nome agente..." 
+                               style="width: 100%; max-width: 300px;" maxlength="20">
+                    </div>
+                    <div style="margin: 15px 0;">
+                        <input type="text" id="playerTeamInput" placeholder="Squadra (opzionale)..." 
+                               style="width: 100%; max-width: 300px;" maxlength="15">
+                    </div>
+                    <button onclick="registerPlayer()" style="background: #00aa00; color: white; padding: 15px 30px; font-size: 16px;">
+                        🎯 ENTRA IN OPERAZIONE
+                    </button>
+                </div>
+            </div>
+
+            <div id="gameStatus" style="margin: 20px 0; padding: 15px; background: rgba(255, 0, 0, 0.1); border: 2px solid #ff0000; border-radius: 10px;">
+                <strong>⏱️ IN ATTESA DI AUTORIZZAZIONE</strong><br>
+                <span style="color: #ffaa00;">L'amministratore deve avviare l'operazione</span>
+            </div>
+
+            <div class="leaderboard-mini">
+                <h4 style="color: #00aaff; margin-bottom: 10px;">👥 AGENTI REGISTRATI</h4>
+                <div id="registeredPlayers">Nessun agente registrato</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="gameContainer" style="display: none;">
+        <div class="terminal-header">
+            <h1>🕵️ OPERAZIONE DARKNET - LAB FORENSE DIGITALE</h1>
+            <div class="player-status">
+                <div>
+                    <strong>Agente:</strong> <span id="playerName">Unknown</span>
+                    <span id="playerTeam" style="color: #00aaff;"></span>
+                </div>
+                <div>
+                    <strong>Rank:</strong> <span id="playerRank">#-</span> | 
+                    <strong>Score:</strong> <span id="currentScore">1000</span>
+                </div>
+            </div>
+            <p>Agente, hai tempo limitato per sventare un attacco terroristico usando strumenti di informatica forense.</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p>Progresso: <span id="progressText">0/7</span> obiettivi completati</p>
+        </div>
+
+        <!-- ROOM 1: DECIFRATURA -->
+        <div class="room active" id="room1">
+            <h2>📋 LAB FORENSE - DECIFRATURA E ANALISI HASH</h2>
+            <p>Interceptato messaggio codificato da fonte terroristica. Procedi con l'analisi forense:</p>
+            
+            <div class="evidence-img">
+MESSAGGIO INTERCETTATO - TOP SECRET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FROM: Shadow_Phoenix
+TO: Ghost_Network
+TIMESTAMP: 2025-05-27 14:30:00 UTC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAYLOAD CRITTOGRAFATO:
+Qeb kbuq pqbm tfii lccbo qeb sbov ciltbo.
+Qeobb jlob afxjlkap tlria klq db.
+Klqefkd jlkbv eb yofkdp txp qex.
+
+PROTOCOLLO: DECRYPT_THEN_HASH
+CODICE OPERATIVO: CRIMSON_TIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>🧪 LABORATORIO FORENSE DIGITALE</h3>
+                <p style="color: #00aaff; margin-bottom: 15px;">Accedi agli strumenti forensi per completare l'analisi</p>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti di decifratura e calcolo hash
+                    </small>
+                </button>
+                
+                <button class="forensic-button" onclick="openForensicLab()">
+                    🔧 INFO STRUMENTI DISPONIBILI
+                </button>
+            </div>
+
+            <div class="blockchain-visual">
+                <h4>🔧 DECODIFICATORE CAESAR</h4>
+                <label>Offset (spostamento lettere): </label>
+                <input type="range" id="caesarSlider" min="1" max="25" value="15">
+                <span id="offsetDisplay">15</span>
+                <br><br>
+                <div class="decoder-output" id="decodedOutput">
+OFFSET 15:
+Dro xokd cdo gvy yppob dro fobi pyhgob.
+Drooo wybo nsqwyyxc gyvun xyg qu.
+Xydrsxq wyxoi ro lbsxqc gqc dro.
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>FASE 1 - Conferma: messaggio decodificato correttamente?</label><br>
+                <button onclick="confirmDecryption()">CONFERMA DECODIFICA</button>
+            </div>
+            <div id="phase1Result"></div>
+
+            <div id="hashPhase" style="display: none;">
+                <div class="step-indicator">
+                    <strong>FASE 2 - ANALISI FORENSE</strong><br>
+                    Procedi con l'analisi del testo decifrato usando strumenti forensi
+                </div>
+
+                <div class="copy-text" id="textToCopy" onclick="copyText()">
+                    <span id="fullText"></span>
+                    <small style="display: block; color: #888; margin-top: 5px;">
+                        [Clicca per copiare tutto il testo decifrato]
+                    </small>
+                </div>
+
+                <div class="input-group">
+                    <label>Analizza il testo decifrato convertilo in un messaggio cifrato di 40 caratteri:</label><br>
+                    <input type="text" id="hashInput" placeholder="Inserisci risultato analisi..." maxlength="40">
+                    <button onclick="checkHash()">VERIFICA</button>
+                </div>
+                <div id="hashResult"></div>
+            </div>
+        </div>
+
+        <!-- ROOM 2: CRYPTO FORENSICS -->
+        <div class="room" id="room2">
+            <h2>🔐 LABORATORIO CRITTOGRAFIA - ARCHIVI PROTETTI</h2>
+            <p>Messaggio verificato! La chiave ottenuta dalla decifratura ha sbloccato un archivio protetto:</p>
+
+            <div class="evidence-img">
+ARCHIVIO DECRITTATO - CLASSIFICATO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILE: wallet_database.zip
+STATO: DECRITTATO CON SUCCESSO
+CONTENUTO: Database indirizzi Bitcoin
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ANALISI RICHIESTA: Identificare soggetto sospetto
+⚠️ THREAT LEVEL: DA DETERMINARE
+🔍 Analisi approfondita richiesta
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>🎯 ACCESSO SISTEMI FORENSE AVANZATI</h3>
+                <p>Sistema multi-tool per analisi approfondita delle minacce crypto-finanziarie.</p>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti analisi wallet e database
+                    </small>
+                </button>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <button class="dashboard-button" onclick="openInteractiveDashboard()">
+                        🎯 DASHBOARD FORENSE INTERATTIVO
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Sistema avanzato di analisi e correlazione dati
+                        </small>
+                    </button>
+                    
+                    <button class="forensic-button" onclick="openExcelDB()">
+                        📊 DATABASE WALLET LEGACY
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Visualizzazione tradizionale Excel
+                        </small>
+                    </button>
+                </div>
+                
+                <button class="forensic-button" onclick="openThreatDB()">
+                    🛡️ ACCEDI DATABASE MINACCE
+                </button>
+            </div>
+
+            <div class="input-group">
+                <label>Inserisci il nome del soggetto associato ad attività terroristiche:</label><br>
+                <input type="text" id="suspectName" placeholder="Nome e Cognome...">
+                <button onclick="checkSuspect()">VERIFICA SOGGETTO</button>
+            </div>
+            <div id="suspectResult"></div>
+        </div>
+
+        <!-- ROOM 3: PACKAGE TRACKING FORENSICS -->
+        <div class="room" id="room3">
+            <h2>📦 INVESTIGAZIONE SPEDIZIONI - TRACKING ANALYSIS</h2>
+            <p>Durante la perquisizione presso l'abitazione di Joseph ROSSI è stato trovato materiale sospetto:</p>
+
+            <div class="evidence-img">
+PERQUISIZIONE DOMICILIARE - EVIDENZE SEQUESTRATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCATION: Bologna, Via Argia Magazzari n. 9
+TIMESTAMP: 2025-05-30 09:15:00 CET
+AGENTI: Squadra Mobile Bologna
+MANDATO: N. 2025/CRIM-TIDE/157
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MATERIALE SEQUESTRATO:
+📱 Smartphone Samsung (già analizzato)
+💻 Laptop Dell Latitude (hard disk crittografato)
+📄 Documenti cartacei vari
+💰 Contanti: €8,450
+📦 CODICE TRACKING SOSPETTO: <span style="font-family: 'Times New Roman', serif; font-weight: bold; color: #ffff00;">9C9743I599501</span>
+
+⚠️ PRIORITÀ: Identificare destinazione del pacco
+⚠️ URGENZA: Possibile collegamento con l'attacco
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>🔍 INVESTIGAZIONE AUTONOMA RICHIESTA</h3>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti analisi tracking e ricerca
+                    </small>
+                </button>
+                
+                <p style="color: #ffff00; margin: 15px 0;">
+                    ⚠️ <strong>ATTENZIONE:</strong> Dovrai identificare autonomamente il corriere e rintracciare la destinazione del pacco.<br>
+                    Utilizza le tue competenze investigative e i motori di ricerca per trovare informazioni sul codice tracking.
+                </p>
+                <div style="background: #001a2e; padding: 15px; border-radius: 5px; border: 2px solid #00aaff; margin: 15px 0;">
+                    <strong style="color: #00aaff;">💡 SUGGERIMENTI INVESTIGATIVI:</strong><br>
+                    <span style="color: #ffffff;">
+                        • Analizza il formato del codice tracking<br>
+                        • Cerca sui siti web dei principali corrieri<br>
+                        • Verifica con diverse compagnie di spedizione<br>
+                        • Documenta i risultati delle tue ricerche
+                    </span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Inserisci l'indirizzo completo di destinazione del pacco:</label><br>
+                <input type="text" id="packageDestination" placeholder="Via/Piazza, numero civico, città..." style="width: 400px;">
+                <button onclick="checkDestination()">VERIFICA DESTINAZIONE</button>
+            </div>
+            <div id="destinationResult"></div>
+
+            <!-- SEZIONE VILLA ABBANDONATA -->
+            <div id="villaSection" style="display: none;">
+                <div class="evidence-img" style="margin-top: 30px;">
+PERQUISIZIONE COMPLETATA - VILLA ABBANDONATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCATION: Via Argia Magazzari, 9 Bologna
+TIMESTAMP: 31/05/2025 16:45:00 CET
+SQUADRA: Unità Mobile Bologna + EOD
+STATUS: EDIFICIO SICURO - EVIDENCE SEQUESTRATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RISULTATO PERQUISIZIONE:
+🏠 Villa abbandonata da 6 mesi
+⚠️ Materiale esplosivo sequestrato
+🔫 Armi da guerra rinvenute
+📄 Documentazione sospetta trovata
+🎯 TARGET IDENTIFICATO - Analisi in corso
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                </div>
+
+                <div class="forensic-lab">
+                    <h3>🏠 ANALISI VILLA - EVIDENCE FOTOGRAFICHE</h3>
+                    <p style="color: #ffff00; margin-bottom: 15px;">
+                        ⚠️ Clicca sui pulsanti per visualizzare le evidence fotografiche raccolte dalla scena del crimine
+                    </p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0;">
+                        <button class="lab-access-button" onclick="openEvidencePhoto('ingresso')">
+                            🚪 INGRESSO
+                            <small style="display: block; font-size: 11px; margin-top: 3px;">
+                                Evidence fotografica - Armi sequestrate
+                            </small>
+                        </button>
+                        
+                        <button class="lab-access-button" onclick="openEvidencePhoto('garages')">
+                            🚗 GARAGES  
+                            <small style="display: block; font-size: 11px; margin-top: 3px;">
+                                Evidence fotografica - Esplosivi rinvenuti
+                            </small>
+                        </button>
+                        
+                        <button class="lab-access-button" onclick="openEvidencePhoto('studio')">
+                            📚 STUDIO
+                            <small style="display: block; font-size: 11px; margin-top: 3px;">
+                                Evidence fotografica - Documenti sospetti
+                            </small>
+                        </button>
+                    </div>
+                    
+                    <div style="background: #001a2e; padding: 15px; border-radius: 5px; border: 2px solid #ff6600; margin: 20px 0;">
+                        <strong style="color: #ff6600;">🎯 OBIETTIVO INVESTIGATIVO:</strong><br>
+                        <span style="color: #ffffff;">
+                            Analizza tutte le evidence fotografiche per identificare il TARGET dell'attacco.<br>
+                            <strong style="color: #ffff00;">Frase chiave trovata: "Buon anniversario 07/06/2025"</strong><br>
+                            Determina la location target basandoti sugli indizi raccolti.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>TARGET DELL'ATTACCO (location identificata dalle evidence):</label><br>
+                    <input type="text" id="attackTarget" placeholder="Inserisci il nome della location target..." style="width: 400px;">
+                    <button onclick="checkAttackTarget()">VERIFICA TARGET</button>
+                </div>
+                <div id="targetResult"></div>
+            </div>
+        </div>
+
+        <!-- ROOM 4: REVERSE HASH ANALYSIS -->
+        <div class="room" id="room4">
+            <h2>🔐 LABORATORIO CRITTOGRAFIA - REVERSE HASH ANALYSIS</h2>
+            <p>Target confermato! Durante l'ispezione del sistema centrale è stato trovato un hash criptografico critico:</p>
+
+            <div class="evidence-img">
+HASH INTERCETTATO - EVIDENCE CRITICA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOCATION: Server Command & Control - Network Analysis
+TIMESTAMP: 31/05/2025 18:45:00 CET
+AGENTE: Cyber Investigation Unit - Hash Forensics
+PRIORITÀ: MASSIMA - DECRITTAZIONE URGENTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HASH SHA-256 INTERCETTATO:
+<span style="font-family: 'Courier New', serif; font-weight: bold; color: #ffff00; font-size: 14px; word-break: break-all;">
+67df3d11baec82e985b92edf49bff46635f9f7b1c4a8a2a4e38de7ca48d191f0
+</span>
+
+⚠️ TIPO: SHA-256 (256-bit)
+⚠️ FONTE: Sistema di autenticazione terroristico
+⚠️ OBIETTIVO: Reverse engineering per identificare password/chiave
+⚠️ LUNGHEZZA STIMATA: 4-12 caratteri
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>🔓 REVERSE HASH ANALYSIS TOOLS</h3>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti reverse hash e rainbow tables
+                    </small>
+                </button>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <button class="dashboard-button" onclick="openHashAnalyzer()">
+                        🔍 HASH ANALYZER PRO
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Analisi avanzata algoritmi hash
+                        </small>
+                    </button>
+                    
+                    <button class="forensic-button" onclick="openRainbowTables()">
+                        🌈 RAINBOW TABLES
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Database hash precomputati
+                        </small>
+                    </button>
+                </div>
+                
+                <div class="hint-box">
+                    <h4>💡 SUGGERIMENTI INVESTIGATIVI</h4>
+                    <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
+                        <li>Analizza il pattern dell'hash SHA-256</li>
+                        <li>Prova parole comuni del contesto terroristico</li>
+                        <li>Considera date importanti (formato diversi)</li>
+                        <li>Test con nomi dei sospetti identificati</li>
+                        <li>Verifica combinazioni alfanumeriche semplici</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="hash-analyzer">
+                <h4>🔧 REVERSE HASH CALCULATOR</h4>
+                <p style="color: #ffff00; margin-bottom: 15px;">
+                    Inserisci il testo candidato per verificare se corrisponde all'hash intercettato
+                </p>
+                
+                <div class="hash-display" id="targetHash">
+TARGET HASH (SHA-256):
+67df3d11baec82e985b92edf49bff46635f9f7b1c4a8a2a4e38de7ca48d191f0
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <label style="color: #ffff00; display: block; margin-bottom: 10px;">
+                        Inserisci testo candidato:
+                    </label>
+                    <input type="text" id="reverseHashInput" placeholder="Es: password, data, nome..." style="width: 400px;">
+                    <button onclick="calculateHash()" style="background: #ff6600; color: white; margin-left: 10px;">
+                        🔍 CALCOLA HASH
+                    </button>
+                </div>
+                
+                <div class="hash-display" id="calculatedHash">
+HASH CALCOLATO:
+[Inserisci testo per calcolare]
+                </div>
+                
+                <div id="hashMatch" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;">
+                </div>
+            </div>
+        </div>
+
+        <!-- ROOM 5: MOBILE FORENSICS -->
+        <div class="room" id="room5">
+            <h2>📱 LABORATORIO MOBILE FORENSICS - DISPOSITIVO ANDROID</h2>
+            <p>Dati estratti! Sequestrato smartphone Android del target. Analisi del dump della memoria:</p>
+
+            <div class="evidence-img">
+ANDROID DEVICE FORENSIC DUMP - CRITICAL EVIDENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEVICE: Samsung Galaxy S23 Ultra
+ANDROID VERSION: 14 (API 34)
+ROOT STATUS: Rooted (Custom ROM detected)
+ENCRYPTION: Partially bypassed
+IMEI: 356938035643809
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EVIDENCE TROVATE:
+📱 WhatsApp conversations (1,247 messages)
+📱 Telegram secret chats (67 messages)  
+📱 Signal encrypted messages (234 messages)
+📱 Deleted photos recovery (89 files)
+📱 Location history (GPS coordinates)
+📱 Browsing history (TOR + Dark Web)
+📱 Cryptocurrency wallet apps (3 wallets)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>📲 MOBILE FORENSIC TOOLS</h3>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti mobile forensics e decrittazione
+                    </small>
+                </button>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <button class="dashboard-button" onclick="openCellebriteAnalysis()">
+                        🔧 CELLEBRITE UFED
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Professional mobile extraction
+                        </small>
+                    </button>
+                    
+                    <button class="forensic-button" onclick="openMessagingAnalysis()">
+                        💬 MESSAGING RECOVERY
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            WhatsApp, Telegram, Signal analysis
+                        </small>
+                    </button>
+                </div>
+            </div>
+
+            <div class="blockchain-visual">
+                <h4>💬 MESSAGGI RECUPERATI - THREAT INTELLIGENCE</h4>
+                <div style="background: #000; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">
+                    <div id="messagingData"></div>
+                </div>
+                <button onclick="decryptMessages()" style="margin-top: 10px;">🔓 DECRIPTA MESSAGGI</button>
+            </div>
+
+            <div class="input-group">
+                <label>Tempo previsto per l'attacco terroristico (formato: HH:MM):</label><br>
+                <input type="text" id="attackTime" placeholder="HH:MM" maxlength="5">
+                <button onclick="checkAttackTime()">VERIFICA TIMELINE</button>
+            </div>
+            <div id="timeResult"></div>
+        </div>
+
+        <!-- ROOM 6: TIMELINE RECONSTRUCTION -->
+        <div class="room" id="room6">
+            <h2>⏰ RICOSTRUZIONE TIMELINE - CRONOLOGIA ATTACCO</h2>
+            <p>Timeline confermata! Ricostruisci la sequenza temporale completa dell'operazione terroristica:</p>
+
+            <div class="evidence-img">
+TIMELINE RECONSTRUCTION - OPERAZIONE CRIMSON_TIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STATUS: CRITICAL - ATTACK IMMINENT
+CONFIDENCE LEVEL: 94.7%
+AUTOMATED CORRELATION: ENABLED
+PREDICTIVE ANALYSIS: ACTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+EVENTI CORRELATI TROVATI:
+🕐 Purchase cryptocurrency (August 2024)
+🕐 Contact with terrorist network (September 2024)  
+🕐 Download attack materials (September 2024)
+🕐 Villa preparation & weapons storage (October 2024)
+🕐 Target reconnaissance - Grand Tour Italia (November 2024)
+🕐 Final preparations (Current time)
+🕐 Planned execution: 07/06/2025 - Anniversary Event
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>📊 TIMELINE ANALYSIS</h3>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti timeline e correlazione eventi
+                    </small>
+                </button>
+                
+                <button class="dashboard-button" onclick="openTimelineBuilder()">
+                    ⏱️ TIMELINE BUILDER INTERATTIVO
+                    <small style="display: block; font-size: 12px; margin-top: 5px;">
+                        Correlazione automatica degli eventi
+                    </small>
+                </button>
+            </div>
+
+            <div class="blockchain-visual">
+                <h4>🎯 PREDIZIONE THREAT INTELLIGENCE</h4>
+                <div style="background: #000; padding: 15px; border-radius: 5px;">
+                    <canvas id="timelineCanvas" width="800" height="200" style="background: #000; border-radius: 5px; width: 100%;"></canvas>
+                </div>
+                <button onclick="generateTimeline()" style="margin-top: 10px;">📈 GENERA TIMELINE</button>
+            </div>
+
+            <div class="input-group">
+                <label>Location specifica dell'evento target (dettagli GPS raccolti):</label><br>
+                <input type="text" id="attackLocation" placeholder="Inserisci location specifica...">
+                <button onclick="checkLocation()">VERIFICA LOCATION</button>
+            </div>
+            <div id="locationResult"></div>
+        </div>
+
+        <!-- ROOM 7: LINK ANALYSIS -->
+        <div class="room" id="room7">
+            <h2>🕸️ LINK ANALYSIS - CORRELAZIONE INVESTIGATIVA</h2>
+            <p>Location confermata! Analizza le connessioni tra tutti gli elementi raccolti per completare il quadro investigativo:</p>
+
+            <div class="evidence-img">
+CORRELAZIONE DATI - ANALISI FINALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OPERATION: CRIMSON_TIDE_2025
+ENTITIES ANALYZED: 47 soggetti/oggetti/eventi
+CONFIDENCE LEVEL: 98.2%
+CORRELATION ENGINE: ACTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PATTERN IDENTIFICATI:
+🔗 Joseph MODUGNO → Villa Argia Magazzari
+🔗 Hash craccato → Sistema C&C terroristico  
+🔗 Mobile forensics → Timeline 14:30
+🔗 Grand Tour Bologna → Data 07/06/2025
+🔗 Network mapping → 12 complici attivi
+🔗 Bitcoin transactions → Finanziamento operazione
+🔗 Evidence chain → Procedimento legale
+
+⚠️ CODICE OPERATIVO FINALE: Da identificare per validazione
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            </div>
+
+            <div class="forensic-lab">
+                <h3>🧠 LINK ANALYSIS ENGINE</h3>
+                
+                <button class="lab-access-button" onclick="openLabFolder()">
+                    🔬 ACCEDI LAB_FORENSE
+                    <small style="display: block; font-size: 11px; margin-top: 3px;">
+                        D:\ESCAPE_ROOM\LAB_FORENSE - Strumenti correlazione e pattern analysis
+                    </small>
+                </button>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin: 20px 0;">
+                    <button class="dashboard-button" onclick="openCorrelationEngine()">
+                        🕸️ CORRELATION ENGINE
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Analisi pattern e connessioni
+                        </small>
+                    </button>
+                    
+                    <button class="forensic-button" onclick="openEntityMapper()">
+                        🗺️ ENTITY MAPPER
+                        <small style="display: block; font-size: 12px; margin-top: 5px;">
+                            Mappa entità e relazioni
+                        </small>
+                    </button>
+                </div>
+            </div>
+
+            <div class="blockchain-visual">
+                <h4>🔍 PATTERN CORRELATION MATRIX</h4>
+                <div style="background: #000; padding: 15px; border-radius: 5px;">
+                    <canvas id="linkCanvas" width="800" height="300" style="background: #000; border-radius: 5px; width: 100%;"></canvas>
+                </div>
+                <button onclick="generateLinkAnalysis()" style="margin-top: 10px;">📊 GENERA ANALISI CORRELAZIONI</button>
+            </div>
+
+            <div class="hash-analyzer">
+                <h4>🔐 CODICE OPERATIVO FINALE</h4>
+                <p style="color: #ffff00; margin-bottom: 15px;">
+                    Analizza tutti gli elementi raccolti per ricostruire il codice operativo finale dell'operazione CRIMSON_TIDE
+                </p>
+                
+                <div class="hint-box">
+                    <h4>💡 ELEMENTI CHIAVE IDENTIFICATI</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <div style="background: #001a2e; padding: 10px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <strong style="color: #00aaff;">CUSTODY</strong><br>
+                            <small style="color: #ffffff;">Parola chiave procedurale</small>
+                        </div>
+                        <div style="background: #001a2e; padding: 10px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <strong style="color: #00aaff;">2025</strong><br>
+                            <small style="color: #ffffff;">Anno operazione</small>
+                        </div>
+                        <div style="background: #001a2e; padding: 10px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <strong style="color: #00aaff;">TIDE</strong><br>
+                            <small style="color: #ffffff;">Codice missione</small>
+                        </div>
+                        <div style="background: #001a2e; padding: 10px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <strong style="color: #00aaff;">-</strong><br>
+                            <small style="color: #ffffff;">Separatore standard</small>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #2a2a00; border-radius: 5px; border: 2px solid #ffff00;">
+                        <strong style="color: #ffff00;">💡 ELEMENTI DA ANALIZZARE:</strong><br>
+                        <span style="color: #ffffff;">
+                            Studia le connessioni tra tutti gli elementi raccolti durante l'investigazione.<br>
+                            Il codice finale segue uno standard procedurale delle forze dell'ordine.
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label style="color: #ffff00;">Ricostruisci il codice operativo finale:</label><br>
+                    <input type="text" id="operativeCode" placeholder="FORMATO: XXXX-YYYY-XXXX" style="width: 300px;">
+                    <button onclick="validateOperativeCode()">🔍 VALIDA CODICE</button>
+                </div>
+                <div id="operativeResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal" id="forensicModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeForensicLab()">&times;</span>
+            <h3>🔬 Laboratorio Forense Digitale</h3>
+            <div>
+                <p><strong>ACCESSO AUTORIZZATO - LAB FORENSE</strong></p>
+                <p><strong>Percorso:</strong> D:\ESCAPE_ROOM\LAB_FORENSE</p>
+                <p>Strumenti disponibili per l'analisi forense:</p>
+                <br>
+                <ul style="color: #00aaff; margin-left: 20px;">
+                    <li>Decifratori crittografici</li>
+                    <li>Calcolatori hash (SHA1, MD5, SHA256)</li>
+                    <li>Analizzatori di file</li>
+                    <li>Tool di verifica integrità</li>
+                    <li>Mobile forensics tools</li>
+                    <li>Timeline analyzers</li>
+                </ul>
+                <br>
+                <p style="color: #ffff00;">Usa i tools nella cartella LAB_FORENSE per completare l'analisi.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="hintModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeHint()">&times;</span>
+            <h3>💡 Hint Forense</h3>
+            <div id="hintContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // === SISTEMA MULTIPLAYER ===
+        class MultiplayerSystem {
+            constructor() {
+                this.playerId = null;
+                this.playerData = null;
+                this.gameState = null;
+                this.channel = new BroadcastChannel('crimson_tide_game');
+                this.setupEventListeners();
+                this.initializeStorage();
+                this.startSyncLoop();
+            }
+
+            initializeStorage() {
+                if (!localStorage.getItem('crimson_tide_game')) {
+                    localStorage.setItem('crimson_tide_game', JSON.stringify({
+                        players: [],
+                        gameRunning: false,
+                        startTime: null
+                    }));
+                }
+                this.loadGameState();
+            }
+
+            loadGameState() {
+                try {
+                    this.gameState = JSON.parse(localStorage.getItem('crimson_tide_game') || '{}');
+                } catch (e) {
+                    console.error('Errore caricamento stato gioco:', e);
+                    this.gameState = { players: [], gameRunning: false, startTime: null };
+                }
+            }
+
+            saveGameState() {
+                localStorage.setItem('crimson_tide_game', JSON.stringify(this.gameState));
+                this.channel.postMessage({
+                    type: 'gameStateUpdate',
+                    data: this.gameState
+                });
+            }
+
+            setupEventListeners() {
+                this.channel.onmessage = (event) => {
+                    switch (event.data.type) {
+                        case 'gameStateUpdate':
+                            this.handleGameStateUpdate(event.data.data);
+                            break;
+                        case 'gameStart':
+                            this.handleGameStart();
+                            break;
+                        case 'gameStop':
+                            this.handleGameStop();
+                            break;
+                    }
+                };
+            }
+
+            registerPlayer(name, team = '') {
+                this.loadGameState();
+                
+                if (this.gameState.players.some(p => p.name === name)) {
+                    alert('❌ Nome già in uso! Scegli un altro nome.');
+                    return false;
+                }
+
+                if (this.gameState.players.length >= 15) {
+                    alert('❌ Limite massimo di 15 giocatori raggiunto!');
+                    return false;
+                }
+
+                this.playerId = Date.now() + Math.random();
+                this.playerData = {
+                    id: this.playerId,
+                    name: name,
+                    team: team,
+                    score: 1000,
+                    currentRoom: 1,
+                    status: 'waiting',
+                    startTime: null,
+                    finishTime: null,
+                    hintsUsed: 0,
+                    roomProgress: {
+                        1: false, 2: false, 3: false, 4: false,
+                        5: false, 6: false, 7: false
+                    },
+                    registrationTime: Date.now()
+                };
+
+                this.gameState.players.push(this.playerData);
+                this.saveGameState();
+                this.updateUI();
+                return true;
+            }
+
+            updateProgress(room, completed = true) {
+                if (!this.playerData) return;
+
+                this.playerData.roomProgress[room] = completed;
+                if (completed && room === this.playerData.currentRoom) {
+                    this.playerData.currentRoom = Math.min(room + 1, 7);
+                }
+
+                const totalCompleted = Object.values(this.playerData.roomProgress).filter(r => r).length;
+                if (totalCompleted === 7) {
+                    this.playerData.status = 'finished';
+                    this.playerData.finishTime = Date.now();
+                    this.showCompletionScreen();
+                }
+
+                this.syncPlayerData();
+                this.updateUI();
+            }
+
+            updateScore(newScore) {
+                if (!this.playerData) return;
+                this.playerData.score = newScore;
+                this.syncPlayerData();
+                this.updateUI();
+            }
+
+            useHint() {
+                if (!this.playerData) return;
+                this.playerData.hintsUsed++;
+                this.syncPlayerData();
+                this.updateUI();
+            }
+
+            syncPlayerData() {
+                this.loadGameState();
+                const playerIndex = this.gameState.players.findIndex(p => p.id === this.playerId);
+                if (playerIndex !== -1) {
+                    this.gameState.players[playerIndex] = { ...this.playerData };
+                    this.saveGameState();
+                }
+            }
+
+            handleGameStateUpdate(newState) {
+                this.gameState = newState;
+                
+                if (this.playerId) {
+                    const currentPlayer = this.gameState.players.find(p => p.id === this.playerId);
+                    if (currentPlayer) {
+                        const localRoom = this.playerData?.currentRoom || 1;
+                        if (currentPlayer.currentRoom < localRoom) {
+                            currentPlayer.currentRoom = localRoom;
+                            currentPlayer.roomProgress = { ...this.playerData.roomProgress };
+                        }
+                    }
+                }
+                
+                this.updateUI();
+            }
+
+            handleGameStart() {
+                if (this.playerData && this.playerData.status === 'waiting') {
+                    this.playerData.status = 'playing';
+                    this.playerData.startTime = Date.now();
+                    this.syncPlayerData();
+                    this.startGame();
+                }
+            }
+
+            handleGameStop() {
+                if (this.playerData && this.playerData.status === 'playing') {
+                    this.playerData.status = 'waiting';
+                    this.syncPlayerData();
+                    this.pauseGame();
+                }
+            }
+
+            startGame() {
+                document.getElementById('waitingScreen').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'block';
+                gameStartTime = Date.now();
+                
+                if (!gameTimer) {
+                    gameTimer = setInterval(updateTimer, 1000);
+                }
+                
+                alert('🚀 OPERAZIONE AVVIATA!\n\nInizio investigazione...');
+            }
+
+            pauseGame() {
+                document.getElementById('gameContainer').classList.add('game-disabled');
+                alert('⏸️ Gioco in pausa.\n\nAttendi istruzioni dall\'amministratore.');
+            }
+
+            updateUI() {
+                this.updateWaitingScreen();
+                this.updatePlayerStatus();
+            }
+
+            updateWaitingScreen() {
+                const registeredDiv = document.getElementById('registeredPlayers');
+                
+                if (this.gameState.players.length === 0) {
+                    registeredDiv.innerHTML = 'Nessun agente registrato';
+                    return;
+                }
+
+                registeredDiv.innerHTML = this.gameState.players.map(player => {
+                    const statusIcon = player.status === 'playing' ? '🟢' : 
+                                     player.status === 'finished' ? '🏁' : '⏳';
+                    return `
+                        <div style="display: flex; justify-content: space-between; padding: 5px; border-bottom: 1px solid #333;">
+                            <span>${statusIcon} ${player.name}${player.team ? ` (${player.team})` : ''}</span>
+                            <span style="color: #aaa;">Stanza ${player.currentRoom}/7</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const statusDiv = document.getElementById('gameStatus');
+                if (this.gameState.gameRunning) {
+                    statusDiv.innerHTML = `
+                        <strong style="color: #00ff00;">🟢 OPERAZIONE IN CORSO</strong><br>
+                        <span style="color: #ffaa00;">Investigazione attiva</span>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `
+                        <strong>⏱️ IN ATTESA DI AUTORIZZAZIONE</strong><br>
+                        <span style="color: #ffaa00;">L'amministratore deve avviare l'operazione</span>
+                    `;
+                }
+            }
+
+            updatePlayerStatus() {
+                if (!this.playerData) return;
+
+                document.getElementById('playerName').textContent = this.playerData.name;
+                const teamSpan = document.getElementById('playerTeam');
+                if (this.playerData.team) {
+                    teamSpan.textContent = ` (${this.playerData.team})`;
+                }
+
+                document.getElementById('currentScore').textContent = this.playerData.score;
+
+                const sortedPlayers = [...this.gameState.players]
+                    .sort((a, b) => {
+                        if (a.status === 'finished' && b.status !== 'finished') return -1;
+                        if (b.status === 'finished' && a.status !== 'finished') return 1;
+                        return b.score - a.score;
+                    });
+                
+                const rank = sortedPlayers.findIndex(p => p.id === this.playerId) + 1;
+                document.getElementById('playerRank').textContent = `#${rank}`;
+
+                const completed = Object.values(this.playerData.roomProgress).filter(r => r).length;
+                document.getElementById('progressText').textContent = `${completed}/7`;
+                document.getElementById('progressFill').style.width = `${(completed / 7) * 100}%`;
+            }
+
+            startSyncLoop() {
+                setInterval(() => {
+                    this.loadGameState();
+                    this.updateUI();
+                }, 2000);
+            }
+
+            showCompletionScreen() {
+                const elapsedTime = this.playerData.finishTime - this.playerData.startTime;
+                const minutes = Math.floor(elapsedTime / 60000);
+                const seconds = Math.floor((elapsedTime % 60000) / 1000);
+                
+                alert(`🎉 MISSIONE COMPLETATA!\n\n` +
+                      `⏱️ Tempo: ${minutes}:${seconds.toString().padStart(2, '0')}\n` +
+                      `🏆 Punteggio: ${this.playerData.score}\n` +
+                      `💡 Aiuti usati: ${this.playerData.hintsUsed}\n\n` +
+                      `Attendi il completamento degli altri agenti...`);
+            }
+        }
+
+        // === VARIABILI GLOBALI ===
+        const multiplayer = new MultiplayerSystem();
+        var currentRoom = 1;
+        var progress = 0;
+        var gameStartTime = null;
+        var gameTimer = null;
+        var score = 1000;
+        var gameCompleted = false;
+        var fullDecryptedText = "";
+        var investigativeStep = 1;
+        var operativeCodeValidated = false;
+        var bonusQuestionAnswered = false;
+
+        // Target hash per Room 4
+        const targetHashRoom4 = "67df3d11baec82e985b92edf49bff46635f9f7b1c4a8a2a4e38de7ca48d191f0";
+
+        // Dati per dashboard - 10 soggetti (con provvigioni specifiche)
+        var walletData = [
+            {id: 'WLT001', name: 'Marco BIANCHI', wallet: '1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2', type: 'Legacy P2PKH', btc: 0.025, usd: 1500, risk: 'LOW', status: 'CLEARED', facebook: '100034567891', lastTx: '2024-08-15T14:30:00Z', commission: 75.00},
+            {id: 'WLT002', name: 'Sofia VERDI', wallet: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy', type: 'P2SH', btc: 0.041, usd: 2460, risk: 'LOW', status: 'CLEARED', facebook: '100087654321', lastTx: '2024-09-02T09:45:00Z', commission: 123.00},
+            {id: 'WLT003', name: 'Joseph ROSSI', wallet: 'bc1qh5y3u7eu23qu4kazfgxrpd9dd488k6f3gmd7xu', type: 'Bech32 SegWit', btc: 0.09019897, usd: 9474.50, risk: 'HIGH', status: 'FLAGGED', facebook: '100156789024', lastTx: '2024-09-03T16:22:00Z', commission: 473.73},
+            {id: 'WLT004', name: 'Emma NERI', wallet: 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4', type: 'Bech32 SegWit', btc: 0.089, usd: 5340, risk: 'MEDIUM', status: 'MONITORING', facebook: '100091234567', lastTx: '2024-08-28T11:15:00Z', commission: 267.00},
+            {id: 'WLT005', name: 'Luca GIALLI', wallet: '35ULMyVnFoYaPaMxwHTRmaGdABpAThM4QR', type: 'P2SH', btc: 0.156, usd: 9360, risk: 'MEDIUM', status: 'MONITORING', facebook: '100065432198', lastTx: '2024-09-01T13:00:00Z', commission: 468.00},
+            {id: 'WLT006', name: 'Rami AL-NAJJAR', wallet: 'bc1qm5sy4cd2ld8h2pf6ml7q8x9vb3r7h8kp2s5n7e', type: 'Bech32 SegWit', btc: 0.2847362, usd: 28967.42, risk: 'HIGH', status: 'FLAGGED', facebook: '100298745631', lastTx: '2024-09-04T02:15:00Z', commission: 1448.37},
+            {id: 'WLT007', name: 'Michael THOMPSON', wallet: '1Ks9dVtThompsonM8vE4kR2mY9Qp7BnCx', type: 'Legacy P2PKH', btc: 0.078, usd: 4680, risk: 'MEDIUM', status: 'MONITORING', facebook: '100412789365', lastTx: '2024-08-22T19:30:00Z', commission: 234.00},
+            {id: 'WLT008', name: 'Sarah MARTINEZ', wallet: 'bc1qsr4h7martinez2k8n9p5v3x6z1a4b7c8d9e0f1', type: 'Bech32 SegWit', btc: 0.1923451, usd: 18234.67, risk: 'HIGH', status: 'FLAGGED', facebook: '100534621879', lastTx: '2024-09-05T08:45:00Z', commission: 911.73},
+            {id: 'WLT009', name: 'Alessandro FERRARI', wallet: '3FerrariAlex7K9mQvE2rG8wY5tP4uN6xS2', type: 'P2SH', btc: 0.034, usd: 2040, risk: 'LOW', status: 'CLEARED', facebook: '100387456219', lastTx: '2024-08-18T11:00:00Z', commission: 102.00},
+            {id: 'WLT010', name: 'David ANDERSON', wallet: 'bc1qdavid45anderson2x8m9k7n4p1s6t9b3c5d7f8', type: 'Bech32 SegWit', btc: 0.4782195, usd: 47821.95, risk: 'HIGH', status: 'FLAGGED', facebook: '100645893712', lastTx: '2024-09-06T14:20:00Z', commission: 2391.10}
+        ];
+
+        // Hints (senza soluzioni esplicite)
+        var hints = {
+            1: "Prova a decifrare il messaggio usando diversi offset. Dopo la decifratura, usa strumenti forensi per analizzare il testo.",
+            2: "Analizza attentamente il database wallet. Cerca soggetti flaggati come di interesse investigativo.",
+            3: "Analizza il codice di tracking trovato durante la perquisizione. Prova diversi corrieri per identificare quello giusto.",
+            4: "Analizza l'hash SHA-256 intercettato. Prova parole chiave del contesto investigativo, nomi dei sospetti, date importanti.",
+            5: "Esamina i messaggi recuperati dal dispositivo mobile per trovare informazioni temporali sull'attacco.",
+            6: "Usa l'analisi GPS e le correlazioni degli eventi per determinare il target geografico dell'operazione.",
+            7: "Analizza tutte le connessioni tra gli elementi raccolti. Il pattern del codice finale segue uno standard procedurale. Per il quesito bonus, considera le organizzazioni terroristiche del Medio Oriente."
+        };
+
+        // === FUNZIONI REVERSE HASH (ROOM 4) ===
+        async function calculateSHA256(text) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        async function calculateHash() {
+            const input = document.getElementById('reverseHashInput');
+            const result = document.getElementById('calculatedHash');
+            const match = document.getElementById('hashMatch');
+            
+            if (!input || !result || !match) return;
+            
+            const text = input.value.trim();
+            if (!text) {
+                result.textContent = "HASH CALCOLATO:\n[Inserisci testo per calcolare]";
+                match.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const calculatedHash = await calculateSHA256(text);
+                result.textContent = `HASH CALCOLATO (SHA-256):\n${calculatedHash}`;
+                
+                if (calculatedHash === targetHashRoom4) {
+                    match.innerHTML = '<div style="background: #00ff00; color: #000; text-align: center; font-weight: bold; padding: 15px;">✅ HASH MATCH CONFERMATO! REVERSE ENGINEERING COMPLETATO! 🎯</div>';
+                    match.style.display = 'block';
+                    
+                    setTimeout(function() {
+                        alert('🎯 Hash craccato con successo! Procedendo alla Mobile Forensics...');
+                        nextRoom();
+                    }, 3000);
+                } else {
+                    match.innerHTML = '<div style="background: #ff0000; color: #fff; text-align: center; font-weight: bold;">❌ Hash non corrispondente</div>';
+                    match.style.display = 'block';
+                }
+            } catch (error) {
+                result.textContent = "ERRORE: Impossibile calcolare hash";
+                match.style.display = 'none';
+            }
+        }
+
+        function openHashAnalyzer() {
+            alert('🔍 HASH ANALYZER PRO\n\n' +
+                  'Analisi hash completata:\n' +
+                  '• Algoritmo: SHA-256 confermato\n' +
+                  '• Lunghezza: 64 caratteri esadecimali\n' +
+                  '• Entropia: Alta (possibile password forte)\n' +
+                  '• Pattern: Nessun pattern rilevato\n' +
+                  '• Suggerimento: Prova termini del contesto\n\n' +
+                  'Usa il reverse calculator per i tentativi.');
+        }
+
+        function openRainbowTables() {
+            alert('🌈 RAINBOW TABLES DATABASE\n\n' +
+                  'Database consultato:\n' +
+                  '• Common passwords: 2.1M entries\n' +
+                  '• Dictionary words: 450K entries\n' +
+                  '• Dates & numbers: 100K entries\n' +
+                  '• Names database: 85K entries\n' +
+                  '• Lookup result: Non trovato in tabelle\n\n' +
+                  'Hash potrebbe essere custom - prova manualmente.');
+        }
+
+        // === FUNZIONI DI REGISTRAZIONE ===
+        function registerPlayer() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            const team = document.getElementById('playerTeamInput').value.trim();
+            
+            if (!name) {
+                alert('❌ Inserisci il nome dell\'agente!');
+                return;
+            }
+
+            if (multiplayer.registerPlayer(name, team)) {
+                document.getElementById('playerNameInput').value = '';
+                document.getElementById('playerTeamInput').value = '';
+                alert(`✅ Agente "${name}" registrato con successo!\n\nAttendi l'avvio dell'operazione...`);
+            }
+        }
+
+        // === FUNZIONI GIOCO ===
+        function nextRoom() {
+            const current = document.getElementById('room' + currentRoom);
+            if (current) {
+                current.classList.remove('active');
+            }
+            
+            multiplayer.updateProgress(currentRoom, true);
+            
+            currentRoom++;
+            const next = document.getElementById('room' + currentRoom);
+            if (next && currentRoom <= 7) {
+                next.classList.add('active');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            progress++;
+            multiplayer.updateScore(score);
+        }
+
+        function updateTimer() {
+            if (!gameStartTime) return;
+            
+            const elapsed = Date.now() - gameStartTime;
+            const totalSeconds = Math.floor(elapsed / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            document.getElementById('timer').textContent = 
+                (minutes < 10 ? '0' : '') + minutes + ':' + 
+                (seconds < 10 ? '0' : '') + seconds;
+        }
+
+        function showHint() {
+            document.getElementById('hintContent').innerHTML = hints[currentRoom] || "Nessun hint disponibile per questa stanza.";
+            document.getElementById('hintModal').style.display = 'block';
+            
+            score -= 50;
+            multiplayer.useHint();
+            multiplayer.updateScore(score);
+            document.getElementById('currentScore').textContent = score;
+        }
+
+        function closeHint() {
+            document.getElementById('hintModal').style.display = 'none';
+        }
+
+        // === FUNZIONI SPECIFICHE STANZE ===
+        
+        // Stanza 1 - Decifratura Caesar
+        function updateDecoder() {
+            const slider = document.getElementById('caesarSlider');
+            const display = document.getElementById('offsetDisplay');
+            const output = document.getElementById('decodedOutput');
+            
+            if (!slider || !display || !output) return;
+            
+            const offset = parseInt(slider.value);
+            display.textContent = offset;
+            
+            const originalText = "Qeb kbuq pqbm tfii lccbo qeb sbov ciltbo.\nQeobb jlob afxjlkap tlria klq db.\nKlqefkd jlkbv eb yofkdp txp qex.";
+            const decoded = caesarDecode(originalText, offset);
+            
+            fullDecryptedText = decoded;
+            output.textContent = "OFFSET " + offset + ":\n" + decoded;
+        }
+
+        function caesarDecode(text, offset) {
+            var result = "";
+            for (var i = 0; i < text.length; i++) {
+                var char = text[i];
+                if (char >= 'A' && char <= 'Z') {
+                    result += String.fromCharCode(((char.charCodeAt(0) - 65 + offset) % 26) + 65);
+                } else if (char >= 'a' && char <= 'z') {
+                    result += String.fromCharCode(((char.charCodeAt(0) - 97 + offset) % 26) + 97);
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        function confirmDecryption() {
+            const slider = document.getElementById('caesarSlider');
+            const result = document.getElementById('phase1Result');
+            const hashPhase = document.getElementById('hashPhase');
+            const textElement = document.getElementById('fullText');
+            
+            if (!slider || !result) return;
+            
+            const offset = parseInt(slider.value);
+            
+            if (offset === 3) {
+                result.innerHTML = '<div class="success">✅ Decodifica confermata! Procedi alla Fase 2.</div>';
+                if (textElement) {
+                    textElement.textContent = fullDecryptedText;
+                }
+                if (hashPhase) {
+                    hashPhase.style.display = 'block';
+                }
+            } else {
+                result.innerHTML = '<div class="error">❌ Il testo decodificato non sembra corretto. Prova un offset diverso.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        function copyText() {
+            if (fullDecryptedText) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(fullDecryptedText).then(function() {
+                        alert('Testo copiato! Procedi con l\'analisi forense.');
+                    });
+                } else {
+                    var textArea = document.createElement("textarea");
+                    textArea.value = fullDecryptedText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Testo copiato! Procedi con l\'analisi forense.');
+                }
+            }
+        }
+
+        function checkHash() {
+            const input = document.getElementById('hashInput');
+            const result = document.getElementById('hashResult');
+            
+            if (!input || !result) return;
+            
+            const hash = input.value.toLowerCase().trim();
+            
+            if (hash.length === 40 && /^[a-f0-9]+$/.test(hash)) {
+                result.innerHTML = '<div class="success">✅ Hash SHA1 verificato! Procedendo alla fase successiva...</div>';
+                setTimeout(nextRoom, 3000);
+            } else {
+                result.innerHTML = '<div class="error">❌ Formato hash non valido. SHA1 deve essere 40 caratteri esadecimali.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        // Stanza 2 - Database Analysis
+        function checkSuspect() {
+            const input = document.getElementById('suspectName');
+            const result = document.getElementById('suspectResult');
+            
+            if (!input || !result) return;
+            
+            const suspect = input.value.toLowerCase().trim();
+            
+            var highRiskSubjects = [
+                "joseph rossi", "rossi joseph",
+                "rami al-najjar", "al-najjar rami", "rami al najjar", "al najjar rami",
+                "sarah martinez", "martinez sarah", 
+                "david anderson", "anderson david"
+            ];
+            
+            var isHighRisk = highRiskSubjects.some(name => 
+                suspect.includes(name) || (suspect.split(' ').length >= 2 && name.includes(suspect.split(' ')[0]) && name.includes(suspect.split(' ')[1]))
+            );
+            
+            if (isHighRisk) {
+                if (suspect.includes("joseph") || suspect.includes("rossi")) {
+                    result.innerHTML = '<div class="success">✅ Soggetto identificato! Procedendo con protocollo investigativo...</div>';
+                    setTimeout(startInvestigativeProcedure, 2000);
+                } else {
+                    result.innerHTML = '<div class="success">✅ Soggetto ad alto rischio identificato! Procedendo alla fase successiva...</div>';
+                    setTimeout(nextRoom, 3000);
+                }
+            } else {
+                result.innerHTML = '<div class="error">❌ Soggetto non trovato o non associato ad attività sospette. Analizza meglio il database.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        // === PROCEDURA INVESTIGATIVA ITALIANA ===
+        function startInvestigativeProcedure() {
+            var modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'investigativeModal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px; background: #0a0a0a; border: 2px solid #ff6600;">
+                    <div style="background: #7c2d12; color: white; padding: 15px; margin: -30px -30px 20px -30px;">
+                        <h3>🇮🇹 PROCEDURA INVESTIGATIVA ITALIANA</h3>
+                        <small>Protocollo standard Forze dell'Ordine</small>
+                    </div>
+                    
+                    <div id="investigativeContent" style="background: #000; color: #ff6600; padding: 20px; border-radius: 5px;">
+                        <div style="color: #ffff00; margin-bottom: 15px;">
+                            <strong>FASE INVESTIGATIVA 1/4</strong>
+                        </div>
+                        <p style="margin-bottom: 20px;">
+                            Risposta corretta, il soggetto è un sospettato, come procedi?
+                        </p>
+                        
+                        <div id="investigativeQuestion"></div>
+                        <div id="investigativeResult" style="margin-top: 15px;"></div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            showInvestigativeQuestion();
+        }
+        
+        function showInvestigativeQuestion() {
+            var questionContainer = document.getElementById('investigativeQuestion');
+            var resultContainer = document.getElementById('investigativeResult');
+            
+            if (!questionContainer) return;
+            
+            resultContainer.innerHTML = '';
+            
+            switch(investigativeStep) {
+                case 1:
+                    questionContainer.innerHTML = `
+                        <div style="background: #001122; padding: 15px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <p style="color: #00aaff; margin-bottom: 15px;"><strong>Come procedi con l'identificazione?</strong></p>
+                            <button onclick="investigativeAnswer('a', 1)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>a.</strong> Faccio una ricerca sul nome nelle banche dati in uso (S.D.I. - Sistema d'Indagine Interforze - Dorsale Informatica - S.I.Va.3 - Sistema Informativo Valutario)
+                            </button>
+                            <button onclick="investigativeAnswer('b', 1)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>b.</strong> Consulto le fonti aperte nella possibilità di cercare un profilo sui social network
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 2:
+                    questionContainer.innerHTML = `
+                        <div style="background: #001122; padding: 15px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <p style="color: #00aaff; margin-bottom: 15px;"><strong>Dopo aver individuato il profilo Facebook, come posso procedere?</strong></p>
+                            <button onclick="investigativeAnswer('a', 2)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>a.</strong> Inserisco la foto all'interno della banca dati per il riconoscimento facciale (S.A.R.I.)
+                            </button>
+                            <button onclick="investigativeAnswer('b', 2)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>b.</strong> Cerco il nome nelle banche dati
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 3:
+                    questionContainer.innerHTML = `
+                        <div style="background: #001122; padding: 15px; border-radius: 5px; border: 1px solid #00aaff;">
+                            <p style="color: #00ff00; margin-bottom: 10px;">
+                                <strong>✅ RICONOSCIMENTO FACCIALE COMPLETATO</strong>
+                            </p>
+                            <p style="color: #ffff00; margin-bottom: 15px;">
+                                Bravo! Hai trovato il soggetto nella banca dati di riconoscimento facciale S.A.R.I. 
+                                È stato identificato numerose volte, l'ultima il 25 dicembre 2024, dalle forze di polizia.<br><br>
+                                <strong>IDENTITÀ REALE:</strong> Damiano MODUGNESKI, nato in Cecenia e residente a Milano via Porpora, 7777 
+                                - CUI: 696969696971<br><br>
+                                Come procedi ora?
+                            </p>
+                            <button onclick="investigativeAnswer('a', 3)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>a.</strong> Invia una pattuglia senza indugio presso l'abitazione
+                            </button>
+                            <button onclick="investigativeAnswer('b', 3)" style="display: block; width: 100%; margin: 10px 0; padding: 12px; background: #333; color: #fff; border: 1px solid #666; border-radius: 5px; text-align: left; cursor: pointer;">
+                                <strong>b.</strong> Effettua per scrupolo ulteriori ricerche presso le banche dati
+                            </button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 4:
+                    questionContainer.innerHTML = `
+                        <div style="background: #00ff00; color: #000; padding: 20px; border-radius: 5px; text-align: center;">
+                            <h3>🎯 IDENTIFICAZIONE COMPLETATA</h3>
+                            <p style="margin: 15px 0;"><strong>VERA IDENTITÀ DEL SOSPETTO:</strong></p>
+                            <div style="background: #fff; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                                <strong>Nome:</strong> Joseph MODUGNO<br>
+                                <strong>Residenza:</strong> Bologna, via Argia Magazzari n. 9<br>
+                                <strong>Data trasferimento:</strong> 10 aprile 2025<br>
+                                <strong>Alias utilizzato:</strong> Joseph ROSSI / Damiano MODUGNESKI
+                            </div>
+                            <p style="margin: 15px 0;">
+                                Bravo! Da un attento esame delle risultanze ottenute dalle banche dati 
+                                il soggetto si chiama in realtà <strong>Joseph MODUGNO</strong> ed è residente 
+                                dal 10 aprile 2025, a Bologna in via Argia Magazzari n. 9.
+                            </p>
+                            <button onclick="completeInvestigation()" style="background: #ff6600; color: white; border: none; padding: 15px 30px; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                                🚔 PROCEDI CON L'OPERAZIONE
+                            </button>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+        
+        function investigativeAnswer(answer, step) {
+            var resultContainer = document.getElementById('investigativeResult');
+            var correct = false;
+            
+            switch(step) {
+                case 1:
+                    if (answer === 'b') {
+                        correct = true;
+                        resultContainer.innerHTML = '<div style="background: #00ff00; color: #000; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>✅ CORRETTO!</strong> Visualizza profilo Facebook trovato.</div>';
+                    } else {
+                        resultContainer.innerHTML = '<div style="background: #ff0000; color: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>❌ ERRATO!</strong> Le banche dati ufficiali potrebbero non contenere informazioni su alias. Meglio iniziare con fonti aperte.</div>';
+                    }
+                    break;
+                    
+                case 2:
+                    if (answer === 'a') {
+                        correct = true;
+                        resultContainer.innerHTML = '<div style="background: #00ff00; color: #000; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>✅ CORRETTO!</strong> Il riconoscimento facciale S.A.R.I. è la procedura appropriata.</div>';
+                    } else {
+                        resultContainer.innerHTML = '<div style="background: #ff0000; color: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>❌ ERRATO!</strong> Cercare solo il nome potrebbe non rivelare alias. Il riconoscimento facciale è più efficace.</div>';
+                    }
+                    break;
+                    
+                case 3:
+                    if (answer === 'a') {
+                        resultContainer.innerHTML = '<div style="background: #ff0000; color: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>❌ ERRATO!</strong> La pattuglia arriva ma il soggetto non viene trovato. Indirizzo obsoleto!</div>';
+                    } else {
+                        correct = true;
+                        resultContainer.innerHTML = '<div style="background: #00ff00; color: #000; padding: 10px; border-radius: 5px; margin-top: 10px;"><strong>✅ CORRETTO!</strong> Ulteriori ricerche rivelano informazioni aggiornate.</div>';
+                    }
+                    break;
+            }
+            
+            if (correct) {
+                investigativeStep++;
+                setTimeout(function() {
+                    showInvestigativeQuestion();
+                }, 2000);
+            } else {
+                score -= 15;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+        
+        function completeInvestigation() {
+            document.getElementById('investigativeModal').remove();
+            
+            var result = document.getElementById('suspectResult');
+            result.innerHTML = `
+                <div class="success">
+                    <h4>🎯 IDENTIFICAZIONE COMPLETATA CON SUCCESSO!</h4>
+                    <div style="background: #001a2e; padding: 15px; border-radius: 5px; margin: 10px 0; border: 2px solid #00aaff;">
+                        <strong style="color: #00aaff;">TARGET CONFERMATO:</strong><br>
+                        <strong>Nome Reale:</strong> Joseph MODUGNO<br>
+                        <strong>Alias:</strong> Joseph ROSSI / Damiano MODUGNESKI<br>
+                        <strong>Residenza Attuale:</strong> Bologna, via Argia Magazzari n. 9<br>
+                        <strong>Status:</strong> TARGET PRIORITARIO per arresto
+                    </div>
+                    <p style="color: #ffff00;">Procedendo alla fase successiva: Package Tracking...</p>
+                </div>
+            `;
+            
+            setTimeout(nextRoom, 3000);
+        }
+
+        // === FUNZIONI STANZA 3 ===
+        function checkDestination() {
+            var input = document.getElementById('packageDestination');
+            var result = document.getElementById('destinationResult');
+            var villaSection = document.getElementById('villaSection');
+            
+            if (!input || !result) return;
+            
+            var destination = input.value.toLowerCase().trim();
+            
+            if (destination.includes("via argia magazzari") || destination.includes("argia magazzari") || 
+                (destination.includes("magazzari") && destination.includes("bologna"))) {
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ Destinazione confermata! Via Argia Magazzari, 9 Bologna<br>
+                        <div style="background: #001a2e; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #00aaff;">
+                            <strong style="color: #00aaff;">🚔 OPERAZIONE IN CORSO</strong><br>
+                            Pattuglia Bologna Est sul posto<br>
+                            Firmatario: M. THOMPSON - SOSPETTO<br>
+                            <span style="color: #ffff00;">⚠️ VILLA ABBANDONATA IDENTIFICATA</span><br>
+                            <span style="color: #ffff00;">🔍 Perquisizione in corso...</span>
+                        </div>
+                    </div>
+                `;
+                
+                setTimeout(function() {
+                    if (villaSection) {
+                        villaSection.style.display = 'block';
+                        villaSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 3000);
+            } else {
+                result.innerHTML = '<div class="error">❌ Indirizzo errato. Controlla i risultati del tracking Poste Italiane per il codice 9C9743I599501.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        function openEvidencePhoto(location) {
+            var filePaths = {
+                'ingresso': '//bo124bo052uc007/AA.GG/multigiocatore/FOTO/AK47_Evidence.jpeg',
+                'garages': '//bo124bo052uc007/AA.GG/multigiocatore/FOTO/ESPLOSIVO_Evidence.jpeg',
+                'studio': '//bo124bo052uc007/AA.GG/multigiocatore/FOTO/cartolina.jpeg'
+            };
+            
+            var messages = {
+                'ingresso': '🔫 EVIDENCE INGRESSO\n\nApertura: AK47_Evidence.jpeg\nArmi da guerra sequestrate\nPericolo: ALTO\nAnalisi balistica in corso...',
+                'garages': '💣 EVIDENCE GARAGES\n\nApertura: ESPLOSIVO_Evidence.jpeg\nMateriale esplosivo C4 + TNT\nTimer trovati\nTarget: Da identificare',
+                'studio': '📄 EVIDENCE STUDIO\n\nApertura: cartolina.jpeg\nDocumento chiave trovato\n\n🎯 FRASE EVIDENZIATA:\n"Buon anniversario 07/06/2025"\n\nAnalizza la location della cartolina!'
+            };
+            
+            if (filePaths[location]) {
+                try {
+                    // Tenta di aprire il file immagine
+                    window.open('file:///' + filePaths[location], '_blank');
+                    
+                    // Messaggio informativo dopo un breve delay
+                    setTimeout(() => {
+                        alert(messages[location] || 'Evidence photo aperta');
+                    }, 500);
+                    
+                } catch (error) {
+                    // Fallback con istruzioni manuali
+                    alert(messages[location] + 
+                          '\n\n📁 PERCORSO MANUALE:\n' + 
+                          filePaths[location].replace(/\//g, '\\') + 
+                          '\n\nSe l\'immagine non si apre automaticamente,\nnaviga manualmente al percorso sopra.');
+                    
+                    // Prova metodo alternativo
+                    try {
+                        const link = document.createElement('a');
+                        link.href = 'file:///' + filePaths[location];
+                        link.target = '_blank';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } catch (e) {
+                        console.log('Metodo alternativo fallito per:', location, e);
+                    }
+                }
+            } else {
+                alert('Evidence photo non trovata');
+            }
+            
+            return false;
+        }
+
+        function checkAttackTarget() {
+            var input = document.getElementById('attackTarget');
+            var result = document.getElementById('targetResult');
+            
+            if (!input || !result) return;
+            
+            var target = input.value.toLowerCase().trim();
+            
+            if (target.includes("grand tour italia bologna") || 
+                (target.includes("grand tour") && target.includes("bologna"))) {
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ TARGET IDENTIFICATO CON SUCCESSO!<br>
+                        <div style="background: #001a2e; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #00aaff;">
+                            <strong style="color: #00aaff;">🎯 TARGET CONFERMATO:</strong><br>
+                            <strong>Location:</strong> Grand Tour Italia Bologna<br>
+                            <strong>Data Attacco:</strong> 07/06/2025<br>
+                            <strong>Tipo:</strong> Evento ad alta affluenza<br>
+                            <strong>Rischio:</strong> MASSIMO<br>
+                            <span style="color: #ffff00;">🎉 Bravo, hai scoperto il luogo in cui si svolgerà l'attentato!</span>
+                        </div>
+                        <p style="color: #00ff00; text-align: center; font-size: 18px; margin-top: 20px;">
+                            🎯 <strong>BRAVO, HAI SCOPERTO IL LUOGO IN CUI SI SVOLGERÀ L'ATTENTATO!</strong>
+                        </p>
+                        <p style="color: #ffff00; text-align: center; margin-top: 10px;">
+                            Procedendo all'analisi hash forensics...
+                        </p>
+                    </div>
+                `;
+                setTimeout(nextRoom, 4000);
+            } else {
+                result.innerHTML = '<div class="error">❌ Target errato. Analizza attentamente la cartolina e la frase evidenziata.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        // === FUNZIONI STANZA 5 ===
+        function openCellebriteAnalysis() {
+            alert('🔧 CELLEBRITE UFED\n\nEstrazione completata:\n• Physical dump: 128GB\n• Data recovery: 89% successo\n• Encryption bypass: Parziale\n• Timeline: Ricostruita\n• Apps estratte: Tutte le messaging app\n\nProcedi con analisi messaggi.');
+        }
+
+        function openMessagingAnalysis() {
+            alert('💬 MESSAGING ANALYSIS\n\nRecupero messaggi:\n• WhatsApp: 1,247 messaggi\n• Telegram: 67 chat segrete\n• Signal: 234 messaggi crittografati\n• Foto eliminate: 89 recuperate\n\nDecripta i messaggi per trovare dettagli temporali.');
+        }
+
+        function decryptMessages() {
+            var container = document.getElementById('messagingData');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="color: #ffff00; margin-bottom: 15px;">🔐 DECRITTAZIONE RICHIEDE AUTENTICAZIONE</div>
+                <div style="background: #001a2e; padding: 15px; border-radius: 5px; border: 2px solid #ff6600; margin: 15px 0;">
+                    <strong style="color: #ff6600;">🔑 RICHIESTA CHIAVE CRITTOGRAFICA</strong><br>
+                    <p style="color: #ffffff; margin: 10px 0;">
+                        Sulla base degli indizi trovati (foto) inserisci la chiave criptata di 32 caratteri esadecimali relativa a 1 indizio trovato.
+                    </p>
+                    <div style="margin: 15px 0;">
+                        <input type="text" id="md5HashInput" placeholder="Inserisci chiave crittografica (32 caratteri esadecimali)..." 
+                               style="width: 400px; background: #000; color: #00ff00; border: 2px solid #00ff00; padding: 8px; border-radius: 3px; font-family: monospace;" maxlength="32">
+                        <br><br>
+                        <button onclick="verifyMD5Hash()" style="background: #ff6600; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                            🔓 VERIFICA CHIAVE
+                        </button>
+                    </div>
+                    <div id="md5Result" style="margin-top: 15px;"></div>
+                </div>
+            `;
+        }
+
+        function verifyMD5Hash() {
+            var input = document.getElementById('md5HashInput');
+            var result = document.getElementById('md5Result');
+            var container = document.getElementById('messagingData');
+            
+            if (!input || !result || !container) return;
+            
+            var hash = input.value.toLowerCase().trim();
+            var correctHash = "a72568b0be5c262d4b185bc2635c7f14";
+            
+            if (hash === correctHash || (hash.length === 32 && /^[a-f0-9]+$/.test(hash) && hash.startsWith("1ba85d62bd83ecf78e08b85f4e44729c"))) {
+                result.innerHTML = '<div style="color: #00ff00; font-weight: bold;">✅ Hash MD5 verificato! Accesso autorizzato.</div>';
+                
+                setTimeout(function() {
+                    showDecryptedMessages();
+                }, 2000);
+                
+            } else if (hash.length !== 32) {
+                result.innerHTML = '<div style="color: #ff0000; font-weight: bold;">❌ Hash MD5 deve essere esattamente 32 caratteri esadecimali.</div>';
+                score -= 15;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            } else {
+                result.innerHTML = '<div style="color: #ff0000; font-weight: bold;">❌ Hash MD5 errato. Calcola l\'hash di una delle evidence fotografiche (AK47_Evidence.jpeg).</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        function showDecryptedMessages() {
+            var container = document.getElementById('messagingData');
+            if (!container) return;
+            
+            container.innerHTML = '<div style="color: #ffff00;">🔓 Decrypting secure messages...</div>';
+            
+            setTimeout(function() {
+                container.innerHTML = `
+                    <div style="color: #00ff00; margin-bottom: 10px;">DECRYPTED MESSAGES:</div>
+                    <div style="margin: 8px 0; padding: 8px; background: #001a00; border-left: 3px solid #00ff00; border-radius: 3px;">
+                        <strong>[WhatsApp] Unknown</strong> - 14:25<br>
+                        <span style="color: #ffffff;">Everything ready for [TIME_ENCRYPTED]</span>
+                    </div>
+                    <div style="margin: 8px 0; padding: 8px; background: #001a00; border-left: 3px solid #00ff00; border-radius: 3px;">
+                        <strong>[Telegram] Phoenix_Leader</strong> - 14:20<br>
+                        <span style="color: #ffffff;">Target confirmed: Grand Tour Italia Bologna</span>
+                    </div>
+                    <div style="margin: 8px 0; padding: 8px; background: #001a00; border-left: 3px solid #00ff00; border-radius: 3px;">
+                        <strong>[Signal] Contact</strong> - 14:15<br>
+                        <span style="color: #ffffff;">Final preparations complete</span>
+                    </div>
+                    <div style="margin: 8px 0; padding: 8px; background: #001a00; border-left: 3px solid #00ff00; border-radius: 3px;">
+                        <strong>[Telegram] Phoenix_Leader</strong> - 14:05<br>
+                        <span style="color: #ffffff;">Timing: 14:30 sharp</span>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: #ff1a1a; border-radius: 5px; text-align: center;">
+                        <strong style="color: white;">⚠️ ORARIO ATTACCO IDENTIFICATO</strong>
+                    </div>
+                `;
+            }, 2000);
+        }
+
+        function checkAttackTime() {
+            var input = document.getElementById('attackTime');
+            var result = document.getElementById('timeResult');
+            
+            if (!input || !result) return;
+            
+            var time = input.value.trim();
+            
+            if (time === "14:30") {
+                result.innerHTML = '<div class="success">✅ Timeline confermata! Attacco previsto per le 14:30. Procedendo alla ricostruzione completa...</div>';
+                setTimeout(nextRoom, 3000);
+            } else {
+                result.innerHTML = '<div class="error">❌ Orario errato. Analizza meglio i messaggi decriptati.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        // === FUNZIONI STANZA 6 ===
+        function openTimelineBuilder() {
+            alert('⏱️ TIMELINE BUILDER\n\nCorrelazione eventi:\n• Agosto: Acquisto cryptocurrency\n• Settembre: Contatto network terroristico\n• Settembre: Download materiali\n• Corrente: Preparazioni finali\n• Imminente: Esecuzione pianificata\n\nAnalizza i dati GPS per il target.');
+        }
+
+        function generateTimeline() {
+            var canvas = document.getElementById('timelineCanvas');
+            if (!canvas) return;
+            
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(50, 100);
+            ctx.lineTo(750, 100);
+            ctx.stroke();
+            
+            var events = [
+                {x: 100, label: 'Aug 15\nBTC Purchase', color: '#00ff00'},
+                {x: 250, label: 'Sep 2\nNetwork Contact', color: '#ffff00'},
+                {x: 400, label: 'Sep 3\nMaterials Download', color: '#ff6600'},
+                {x: 550, label: 'Current\nPreparations', color: '#ff0000'},
+                {x: 700, label: 'Target: 07/06/2025\nGrand Tour Italia', color: '#ff0000'}
+            ];
+            
+            events.forEach(event => {
+                ctx.beginPath();
+                ctx.arc(event.x, 100, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = event.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = event.color;
+                ctx.font = '11px monospace';
+                ctx.textAlign = 'center';
+                var lines = event.label.split('\n');
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, event.x, 130 + (i * 15));
+                });
+            });
+            
+            ctx.fillStyle = '#00aaff';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('TIMELINE RICOSTRUZIONE - OPERAZIONE CRIMSON_TIDE', 400, 30);
+        }
+
+        function checkLocation() {
+            var input = document.getElementById('attackLocation');
+            var result = document.getElementById('locationResult');
+            
+            if (!input || !result) return;
+            
+            var location = input.value.toLowerCase().trim();
+            
+            if (location.includes("grand tour italia bologna") || 
+                (location.includes("grand tour") && location.includes("bologna")) ||
+                location.includes("bologna grand tour")) {
+                result.innerHTML = '<div class="success">✅ Location target confermata! Grand Tour Italia Bologna - evento anniversario identificato come obiettivo primario. Procedendo alla fase legale...</div>';
+                setTimeout(nextRoom, 3000);
+            } else {
+                result.innerHTML = '<div class="error">❌ Location errata. Analizza meglio i dati GPS, le comunicazioni recuperate e le evidence dalla villa.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        // === FUNZIONI STANZA 7 - LINK ANALYSIS ===
+        function openCorrelationEngine() {
+            alert('🕸️ CORRELATION ENGINE\n\n' +
+                  'Analisi pattern completata:\n' +
+                  '• 47 entità analizzate\n' +
+                  '• 156 connessioni identificate\n' +
+                  '• Pattern correlazione: 98.2%\n' +
+                  '• Codice operativo: Pattern rilevato\n' +
+                  '• Standard procedurale: CUSTODY-ANNO-CODICE\n\n' +
+                  'Usa i pattern per ricostruire il codice finale.');
+        }
+
+        function openEntityMapper() {
+            alert('🗺️ ENTITY MAPPER\n\n' +
+                  'Mappa entità generata:\n' +
+                  '• Joseph MODUGNO (centrale)\n' +
+                  '• 12 complici identificati\n' +
+                  '• CRIMSON_TIDE (codice operativo)\n' +
+                  '• 2025 (anno corrente)\n' +
+                  '• CUSTODY (termine procedurale)\n\n' +
+                  'Tutti gli elementi puntano al codice finale.');
+        }
+
+        function generateLinkAnalysis() {
+            var canvas = document.getElementById('linkCanvas');
+            if (!canvas) return;
+            
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Nodo centrale
+            ctx.beginPath();
+            ctx.arc(400, 150, 50, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ff0000';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Testo centrale
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('CRIMSON', 400, 145);
+            ctx.fillText('TIDE', 400, 160);
+            
+            // Nodi esterni
+            var nodes = [
+                {x: 200, y: 80, label: 'CUSTODY\nPROCEDURE', color: '#00ff00'},
+                {x: 600, y: 80, label: '2025\nYEAR', color: '#00ff00'},
+                {x: 150, y: 220, label: 'JOSEPH\nMODUGNO', color: '#ff6600'},
+                {x: 650, y: 220, label: 'GRAND TOUR\nBOLOGNA', color: '#ff6600'},
+                {x: 100, y: 150, label: 'HASH\nCRACKED', color: '#ffff00'},
+                {x: 700, y: 150, label: 'MOBILE\nFORENSICS', color: '#ffff00'}
+            ];
+            
+            nodes.forEach(node => {
+                // Linee di connessione
+                ctx.strokeStyle = '#00aaff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(400, 150);
+                ctx.lineTo(node.x, node.y);
+                ctx.stroke();
+                
+                // Nodi
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = node.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Labels
+                ctx.fillStyle = '#000';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                var lines = node.label.split('\n');
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, node.x, node.y - 5 + (i * 12));
+                });
+            });
+            
+            // Titolo
+            ctx.fillStyle = '#00aaff';
+            ctx.font = 'bold 16px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('LINK ANALYSIS - OPERAZIONE CRIMSON_TIDE', 400, 30);
+            
+            // Pattern finale
+            ctx.fillStyle = '#ffff00';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText('PATTERN: CUSTODY-2025-TIDE', 400, 280);
+        }
+
+        function validateOperativeCode() {
+            var input = document.getElementById('operativeCode');
+            var result = document.getElementById('operativeResult');
+            
+            if (!input || !result) return;
+            
+            var code = input.value.trim().toUpperCase();
+            
+            if (code === "CUSTODY-2025-TIDE") {
+                operativeCodeValidated = true;
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ CODICE OPERATIVO VALIDATO CON SUCCESSO!<br>
+                        <div style="background: #001a2e; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #00aaff;">
+                            <strong style="color: #00aaff;">🔑 CODICE FINALE CONFERMATO:</strong><br>
+                            <strong>Formato:</strong> CUSTODY-2025-TIDE<br>
+                            <strong>Tipo:</strong> Codice validazione catena custodia<br>
+                            <strong>Status:</strong> ✅ PATTERN MATCH CONFERMATO<br>
+                            <span style="color: #ffff00;">🎯 Caricamento intelligence finale...</span>
+                        </div>
+                    </div>
+                    
+                    <!-- QUESITO FINALE DIRETTAMENTE NEL RESULT -->
+                    <div style="margin-top: 30px;">
+                        <div class="hash-analyzer" style="border-color: #ff0066; box-shadow: 0 0 15px rgba(255, 0, 102, 0.3);">
+                            <h4 style="color: #ff0066;">🎯 QUESITO FINALE BONUS (+30 PUNTI)</h4>
+                            <p style="color: #ffff00; margin-bottom: 15px;">
+                                Intelligence finale: analizza l'affiliazione terroristica identificata durante l'investigazione
+                            </p>
+                            
+                            <div class="evidence-img" style="border-color: #ff0066; color: #ff0066;">
+INTELLIGENCE FINALE - CLASSIFICATO ASSOLUTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SOURCE: Financial Intelligence Unit
+SUBJECT: Joseph ROSSI/MODUGNO - Wallet Analysis
+CLASSIFICATION: TOP SECRET - EYES ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TRANSACTION PATTERN ANALYSIS:
+💰 Wallet tracing rivelata connessione a rete finanziaria
+🔗 Pattern di pagamento compatibile con organizzazione nota
+🌍 Geolocalizzazione transazioni: Medio Oriente
+⚠️ Flag da database anti-terrorismo internazionale
+
+QUESITO INTELLIGENCE:
+Identificare l'organizzazione terroristica di affiliazione
+basandosi sui pattern finanziari e investigativi raccolti.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                            </div>
+                            
+                            <div class="input-group">
+                                <label style="color: #ff0066;">A quale associazione terroristica è affiliato il wallet di Joseph ROSSI?</label><br>
+                                <input type="text" id="terroristAffiliation" placeholder="Nome organizzazione..." style="width: 300px; border-color: #ff0066;">
+                                <button onclick="validateTerroristAffiliation()" style="background: #ff0066; color: white;">🎯 CONFERMA AFFILIAZIONE</button>
+                                <button onclick="skipFinalQuestion()" style="background: #666; color: white; margin-left: 10px;">⏭️ SALTA QUESITO</button>
+                            </div>
+                            <div id="affiliationResult"></div>
+                        </div>
+                    </div>
+                `;
+                
+                // Scroll to the new content
+                setTimeout(function() {
+                    result.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+                
+            } else {
+                result.innerHTML = '<div class="error">❌ Codice errato. Analizza i pattern identificati e gli elementi chiave raccolti.</div>';
+                score -= 25;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        function skipFinalQuestion() {
+            alert('⏭️ Quesito saltato. Procedendo al completamento missione...');
+            showFinalScreen();
+        }
+
+        function validateTerroristAffiliation() {
+            var input = document.getElementById('terroristAffiliation');
+            var result = document.getElementById('affiliationResult');
+            
+            if (!input || !result) return;
+            
+            var affiliation = input.value.trim().toLowerCase();
+            
+            if (affiliation === "hamas") {
+                bonusQuestionAnswered = true;
+                score += 30; // Bonus points
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ AFFILIAZIONE CONFERMATA! BONUS +30 PUNTI!<br>
+                        <div style="background: #001a2e; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #00ff00;">
+                            <strong style="color: #00ff00;">🎯 INTELLIGENCE FINALE:</strong><br>
+                            <strong>Organizzazione:</strong> HAMAS<br>
+                            <strong>Tipo:</strong> Organizzazione terroristica palestinese<br>
+                            <strong>Conferma:</strong> ✅ PATTERN FINANZIARIO MATCH<br>
+                            <span style="color: #ffff00;">🏆 BONUS +30 PUNTI ASSEGNATI!</span>
+                        </div>
+                        <p style="color: #ffff00; text-align: center; margin-top: 10px;">
+                            Caricamento finale in corso...
+                        </p>
+                    </div>
+                `;
+                
+                // Completa la missione
+                setTimeout(showFinalScreen, 2000);
+                
+            } else {
+                result.innerHTML = '<div class="error">❌ Affiliazione errata. Analizza i pattern di transazione e la geolocalizzazione delle operazioni finanziarie.</div>';
+                score -= 15;
+                multiplayer.updateScore(score);
+                document.getElementById('currentScore').textContent = score;
+            }
+        }
+
+        function showFinalScreen() {
+            console.log('Mostrando schermata finale...');
+            gameCompleted = true;
+            var elapsedTime = Math.floor((Date.now() - gameStartTime) / 1000);
+            var minutes = Math.floor(elapsedTime / 60);
+            var seconds = elapsedTime % 60;
+            var timeString = minutes + 'm ' + seconds + 's';
+            
+            // Nascondi tutte le stanze
+            for (var i = 1; i <= 7; i++) {
+                var room = document.getElementById('room' + i);
+                if (room) {
+                    room.style.display = 'none';
+                }
+            }
+            
+            // Crea e mostra la schermata finale
+            var finalScreen = document.createElement('div');
+            finalScreen.id = 'finalScreen';
+            finalScreen.style.cssText = 'display: block; padding: 20px; background: #000; color: #fff;';
+            
+            finalScreen.innerHTML = `
+                <div style="background: linear-gradient(135deg, #001122, #003344); color: #00ff00; padding: 30px; border-radius: 15px; text-align: center; margin: 20px 0; border: 3px solid #00aaff; box-shadow: 0 0 30px rgba(0, 170, 255, 0.6);">
+                    <h2>🎉 OPERAZIONE CRIMSON_TIDE COMPLETATA! 🎉</h2>
+                    
+                    <div style="margin: 20px 0; font-size: 16px; color: #ffffff;">
+                        <div>⏱️ Tempo: ${timeString}</div>
+                        <div>🏆 Score Finale: ${Math.max(score, 0)}/1030</div>
+                        <div>📊 Stanze Completate: 7/7</div>
+                        ${bonusQuestionAnswered ? '<div style="color: #ffff00;">🎯 Bonus Intelligence: +30 punti</div>' : ''}
+                    </div>
+                    
+                    <!-- MESSAGGIO FINALE LAMPEGGIANTE -->
+                    <div style="margin: 30px 0;">
+                        <div style="color: #ff0000; font-size: 28px; font-weight: bold; animation: blink 1s infinite; text-shadow: 0 0 10px #ff0000;">
+                            🎉 CONGRATULAZIONI, HAI SVENTATO L'ATTACCO!!! 🎉
+                        </div>
+                    </div>
+                    
+                    <div style="margin: 20px 0; font-size: 14px; color: #00aaff;">
+                        ✅ Attacco terroristico sventato<br>
+                        ✅ Network terroristico smantellato<br>
+                        ✅ Joseph MODUGNO e complici identificati<br>
+                        ✅ Target Grand Tour Bologna protetto
+                    </div>
+                    
+                    <button onclick="restartGame()" style="background: #ff6600; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px;">
+                        🔄 NUOVA MISSIONE
+                    </button>
+                </div>
+            `;
+            
+            // Aggiungi al container del gioco
+            var gameContainer = document.getElementById('gameContainer');
+            if (gameContainer) {
+                gameContainer.appendChild(finalScreen);
+                finalScreen.scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Aggiorna multiplayer con completamento
+            multiplayer.updateProgress(7, true);
+        }
+
+        // === FUNZIONI DASHBOARD INTERATTIVO ===
+        function openInteractiveDashboard() {
+            var modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto; background: #0a0a0a; border: 2px solid #00ff00;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                    <div style="background: linear-gradient(135deg, #1a1a2e, #16213e); color: #00ff00; padding: 15px; margin: -30px -30px 20px -30px; border-bottom: 2px solid #00ff00;">
+                        <h3>🎯 DASHBOARD FORENSE INTERATTIVO - OPERAZIONE CRIMSON_TIDE</h3>
+                        <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px;">
+                            <span>🕒 Last Update: ${new Date().toLocaleString('it-IT')}</span>
+                            <span>🔍 Status: ACTIVE INVESTIGATION</span>
+                            <span>⚠️ Threat Level: UNKNOWN</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtri -->
+                    <div style="background: #001122; border: 1px solid #00aaff; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h4 style="color: #00aaff; margin-bottom: 10px;">🔍 FILTRI ANALISI</h4>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <select id="riskFilter" onchange="applyFilters()" style="background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 5px;">
+                                <option value="">Tutti i livelli di rischio</option>
+                                <option value="HIGH">🔴 HIGH RISK</option>
+                                <option value="MEDIUM">🟡 MEDIUM RISK</option>
+                                <option value="LOW">🟢 LOW RISK</option>
+                            </select>
+                            <select id="statusFilter" onchange="applyFilters()" style="background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 5px;">
+                                <option value="">Tutti gli status</option>
+                                <option value="FLAGGED">🚨 FLAGGED</option>
+                                <option value="MONITORING">👁️ MONITORING</option>
+                                <option value="CLEARED">✅ CLEARED</option>
+                            </select>
+                            <input type="range" id="amountFilter" min="0" max="50000" value="50000" onchange="applyFilters()" style="margin: 0 10px;">
+                            <label style="color: #00aaff; font-size: 12px;">Max USD: $<span id="amountValue">50000</span></label>
+                        </div>
+                    </div>
+                    
+                    <!-- Statistiche Quick -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: #ff1a1a; padding: 15px; border-radius: 8px; text-align: center; color: white;">
+                            <h4>🚨 HIGH RISK</h4>
+                            <div style="font-size: 24px; font-weight: bold;">${walletData.filter(w => w.risk === 'HIGH').length}</div>
+                        </div>
+                        <div style="background: #ff8800; padding: 15px; border-radius: 8px; text-align: center; color: white;">
+                            <h4>👁️ MONITORING</h4>
+                            <div style="font-size: 24px; font-weight: bold;">${walletData.filter(w => w.status === 'MONITORING').length}</div>
+                        </div>
+                        <div style="background: #00aa00; padding: 15px; border-radius: 8px; text-align: center; color: white;">
+                            <h4>💰 TOTAL VALUE</h4>
+                            <div style="font-size: 24px; font-weight: bold;">${walletData.reduce((sum, w) => sum + w.usd, 0).toLocaleString()}</div>
+                        </div>
+                        <div style="background: #0066cc; padding: 15px; border-radius: 8px; text-align: center; color: white;">
+                            <h4>🔗 WALLETS</h4>
+                            <div style="font-size: 24px; font-weight: bold;">${walletData.length}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabella Interattiva -->
+                    <div id="dataTable" style="background: white; border-radius: 8px; overflow: hidden; border: 1px solid #ddd;"></div>
+                    
+                    <!-- Export Options -->
+                    <div style="margin-top: 20px; text-align: center; background: #001a2e; padding: 15px; border-radius: 8px;">
+                        <h4 style="color: #00aaff; margin-bottom: 15px;">📄 EXPORT RAPPORTI</h4>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="exportData('csv')" style="background: #00ff00; color: #000; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">📊 CSV Completo</button>
+                            <button onclick="exportData('json')" style="background: #ff6600; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">📋 JSON</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            setTimeout(() => {
+                renderDataTable();
+                applyFilters();
+            }, 100);
+        }
+
+        function renderDataTable() {
+            var table = document.getElementById('dataTable');
+            var filteredData = window.filteredWalletData || walletData;
+            
+            if (!table) return;
+            
+            table.innerHTML = `
+                <table style="width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Arial, sans-serif;">
+                    <thead>
+                        <tr style="background: #217346; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">ID</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Nome</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">Wallet Address</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">BTC</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">USD</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">Risk</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">Status</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: center;">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredData.map(wallet => `
+                            <tr style="background: ${wallet.risk === 'HIGH' ? '#ffebee' : 'white'}; ${wallet.risk === 'HIGH' ? 'border-left: 4px solid #ff0000;' : ''}">
+                                <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-size: 11px;">${wallet.id}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; font-weight: ${wallet.risk === 'HIGH' ? 'bold' : 'normal'}; color: ${wallet.risk === 'HIGH' ? '#d32f2f' : '#000'};">${wallet.name}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-size: 10px; color: #0066cc;">${wallet.wallet.substring(0, 25)}...</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-family: monospace;">${wallet.btc}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center; color: #16a34a; font-weight: bold;">${wallet.usd.toLocaleString()}</td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                                    <span style="background: ${getRiskColor(wallet.risk)}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">
+                                        ${wallet.risk}
+                                    </span>
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                                    <span style="background: ${getStatusColor(wallet.status)}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: bold;">
+                                        ${wallet.status}
+                                    </span>
+                                </td>
+                                <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
+                                    <button onclick="analyzeWallet('${wallet.id}')" style="background: #0066cc; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 10px; cursor: pointer;">🔍 Analizza</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function getRiskColor(risk) {
+            switch(risk) {
+                case 'HIGH': return '#d32f2f';
+                case 'MEDIUM': return '#f57c00';
+                case 'LOW': return '#388e3c';
+                default: return '#666';
+            }
+        }
+
+        function getStatusColor(status) {
+            switch(status) {
+                case 'FLAGGED': return '#d32f2f';
+                case 'MONITORING': return '#f57c00';
+                case 'CLEARED': return '#388e3c';
+                default: return '#666';
+            }
+        }
+
+        function applyFilters() {
+            var riskFilter = document.getElementById('riskFilter')?.value || '';
+            var statusFilter = document.getElementById('statusFilter')?.value || '';
+            var amountFilter = parseInt(document.getElementById('amountFilter')?.value || '50000');
+            
+            var amountDisplay = document.getElementById('amountValue');
+            if (amountDisplay) amountDisplay.textContent = amountFilter;
+            
+            window.filteredWalletData = walletData.filter(wallet => {
+                var passRisk = !riskFilter || wallet.risk === riskFilter;
+                var passStatus = !statusFilter || wallet.status === statusFilter;
+                var passAmount = wallet.usd <= amountFilter;
+                return passRisk && passStatus && passAmount;
+            });
+            
+            renderDataTable();
+        }
+
+        function analyzeWallet(walletId) {
+            var wallet = walletData.find(w => w.id === walletId);
+            if (!wallet) return;
+            
+            alert(`🔍 ANALISI DETTAGLIATA - ${wallet.name}\n\n` +
+                  `💰 Valore: ${wallet.btc} BTC (${wallet.usd.toLocaleString()})\n` +
+                  `⚠️ Livello Rischio: ${wallet.risk}\n` +
+                  `📊 Status: ${wallet.status}\n` +
+                  `🔗 Tipo Wallet: ${wallet.type}\n` +
+                  `📱 Facebook ID: ${wallet.facebook}\n` +
+                  `⏰ Ultima Transazione: ${new Date(wallet.lastTx).toLocaleString('it-IT')}\n\n` +
+                  `${wallet.risk === 'HIGH' ? '🚨 ATTENZIONE: Soggetto ad alto rischio!' : '✅ Profilo nella norma'}`);
+        }
+
+        function exportData(format) {
+            if (format === 'csv') {
+                downloadCSVData();
+            } else if (format === 'json') {
+                exportJSON();
+            }
+        }
+
+        function downloadCSVData() {
+            var csvContent = "ID,NOME,WALLET_ADDRESS,BTC_AMOUNT,USD_VALUE,RISK_LEVEL,STATUS,FACEBOOK_ID\n";
+            walletData.forEach(w => {
+                csvContent += `${w.id},"${w.name}","${w.wallet}",${w.btc},${w.usd},${w.risk},${w.status},${w.facebook}\n`;
+            });
+            
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent));
+            element.setAttribute('download', 'wallet_database_' + new Date().toISOString().split('T')[0] + '.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            
+            alert('📊 Database CSV scaricato con successo!');
+        }
+
+        function exportJSON() {
+            var report = {
+                operation: 'CRIMSON_TIDE',
+                timestamp: new Date().toISOString(),
+                wallets: walletData,
+                summary: {
+                    totalWallets: walletData.length,
+                    totalValueUSD: walletData.reduce((sum, w) => sum + w.usd, 0),
+                    highRiskSubjects: walletData.filter(w => w.risk === 'HIGH').length
+                }
+            };
+            
+            var blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'FORENSIC_REPORT_CRIMSON_TIDE.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📋 Report JSON generato con successo!');
+        }
+
+        function openExcelDB() {
+            alert('📊 DATABASE WALLET LEGACY\n\nApertura visualizzazione Excel simulata...\n\nDatabase con 10 soggetti identificati\n4 soggetti ad alto rischio flaggati\nValore totale monitorato: $127,888');
+        }
+
+        function openThreatDB() {
+            alert('🛡️ DATABASE MINACCE\n\nAccesso autorizzato - Threat Intelligence\n\n• Database wallet terroristici\n• Blacklist indirizzi Bitcoin\n• Sistema correlazione identità\n• Analizzatori rischio finanziario\n\n⚠️ MULTIPLE HIGH RISK SUBJECTS DETECTED');
+        }
+
+        // === FUNZIONI UTILITY ===
+        function openLabFolder() {
+            try {
+                // Prova ad aprire il percorso specifico
+                window.open('file://bo124bo052uc007/AA.GG/multigiocatore/LAB_FORENSE', '_blank');
+                
+                // Messaggio di conferma
+                setTimeout(() => {
+                    alert('🔬 ACCESSO LAB_FORENSE\n\n' +
+                          'Apertura cartella: D:\\ESCAPE_ROOM\\LAB_FORENSE\n\n' +
+                          'Strumenti forensi disponibili:\n' +
+                          '• Calcolatori hash (MD5, SHA1, SHA256)\n' +
+                          '• Decifratori Caesar/ROT13\n' +
+                          '• Analizzatori steganografia\n' +
+                          '• Tools mobile forensics\n' +
+                          '• Validatori timeline\n' +
+                          '• Analizzatori tracking\n\n' +
+                          'Se la cartella non si apre automaticamente,\n' +
+                          'naviga manualmente a: D:\\ESCAPE_ROOM\\LAB_FORENSE');
+                }, 500);
+                
+            } catch (error) {
+                // Fallback se window.open non funziona
+                alert('🔬 ACCESSO LAB_FORENSE\n\n' +
+                      'Percorso: D:\\ESCAPE_ROOM\\LAB_FORENSE\n\n' +
+                      'Per accedere manualmente:\n' +
+                      '1. Apri Esplora File\n' +
+                      '2. Naviga a D:\\ESCAPE_ROOM\\LAB_FORENSE\n' +
+                      '3. Usa i tools forensi per l\'analisi\n\n' +
+                      'Strumenti disponibili nella cartella.');
+                
+                // Prova metodo alternativo
+                try {
+                    const link = document.createElement('a');
+                    link.href = 'file:///D:/ESCAPE_ROOM/LAB_FORENSE';
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.log('Metodo alternativo fallito:', e);
+                }
+            }
+            
+            return false;
+        }
+
+        function openForensicLab() {
+            document.getElementById('forensicModal').style.display = 'block';
+        }
+
+        function closeForensicLab() {
+            document.getElementById('forensicModal').style.display = 'none';
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+        // === INIZIALIZZAZIONE ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup slider per Caesar cipher
+            const slider = document.getElementById('caesarSlider');
+            if (slider) {
+                slider.addEventListener('input', updateDecoder);
+                updateDecoder();
+            }
+
+            // Setup listener per registrazione con Enter
+            document.getElementById('playerNameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    registerPlayer();
+                }
+            });
+
+            document.getElementById('playerTeamInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    registerPlayer();
+                }
+            });
+
+            // Avvia aggiornamenti UI
+            multiplayer.updateUI();
+        });
+    </script>
+</body>
+</html>
