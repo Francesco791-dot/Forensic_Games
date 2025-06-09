@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 DASHBOARD ADMIN - OPERAZIONE CRIMSON TIDE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1426, #1a252f);
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #ff0000, #ff6600);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+        }
+        
+        .admin-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00aaff;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.3);
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .player-card {
+            background: linear-gradient(135deg, #001a2e, #003366);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #00aaff;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .player-card.waiting {
+            border-color: #666;
+            opacity: 0.7;
+        }
+        
+        .player-card.playing {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        .player-card.finished {
+            border-color: #ffaa00;
+            background: linear-gradient(135deg, #2a1a00, #4d3300);
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+        }
+        
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #ffaa00;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 170, 0, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #ffaa00;
+            transition: all 0.3s;
+        }
+        
+        .leaderboard-item:hover {
+            background: rgba(255, 170, 0, 0.2);
+        }
+        
+        .leaderboard-item.first {
+            background: rgba(255, 215, 0, 0.2);
+            border-left-color: #ffd700;
+        }
+        
+        .leaderboard-item.second {
+            background: rgba(192, 192, 192, 0.2);
+            border-left-color: #c0c0c0;
+        }
+        
+        .leaderboard-item.third {
+            background: rgba(205, 127, 50, 0.2);
+            border-left-color: #cd7f32;
+        }
+        
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .control-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .start-btn {
+            background: #00aa00;
+            color: white;
+        }
+        
+        .start-btn:hover {
+            background: #00cc00;
+            box-shadow: 0 0 15px rgba(0, 170, 0, 0.5);
+        }
+        
+        .stop-btn {
+            background: #ff0000;
+            color: white;
+        }
+        
+        .stop-btn:hover {
+            background: #ff3333;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+        }
+        
+        .reset-btn {
+            background: #666;
+            color: white;
+        }
+        
+        .reset-btn:hover {
+            background: #888;
+            box-shadow: 0 0 15px rgba(102, 102, 102, 0.5);
+        }
+        
+        .timer-display {
+            font-size: 2.5em;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(0, 170, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #00aaff;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            background: rgba(0, 170, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffaa00;
+            margin: 5px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffaa00);
+            transition: width 0.3s;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-waiting { background: #666; }
+        .status-playing { background: #00ff00; animation: pulse 2s infinite; }
+        .status-finished { background: #ffaa00; }
+        
+        .room-indicator {
+            background: rgba(0, 170, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-left: 10px;
+            border: 1px solid #00aaff;
+        }
+        
+        .player-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .mini-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mini-btn.danger:hover {
+            background: #ff0000;
+        }
+        
+        .mini-btn.warning:hover {
+            background: #ff6600;
+        }
+        
+        .mini-btn.success:hover {
+            background: #00aa00;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .live-indicator {
+            animation: pulse 2s infinite;
+            color: #ff0000;
+            font-weight: bold;
+        }
+        
+        .game-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .game-status.waiting {
+            background: rgba(102, 102, 102, 0.2);
+            border: 2px solid #666;
+            color: #ccc;
+        }
+        
+        .game-status.running {
+            background: rgba(0, 170, 0, 0.2);
+            border: 2px solid #00aa00;
+            color: #00ff00;
+        }
+        
+        .room-stats {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .room-stat {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .room-stat.active {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        
+        .export-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 102, 0, 0.1);
+            border: 2px solid #ff6600;
+            border-radius: 10px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a2e;
+            border: 2px solid #00aaff;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #ff6b6b;
+        }
+        
+        .close:hover {
+            color: #ff0000;
+        }
+      var firebaseConfig = {
+				apiKey: "AIzaSyC5vtdGImHxZ4TsorOku8IfpwBQjmuk9YM",
+				authDomain: "escape-room-crimson-tide.firebaseapp.com",
+				databaseURL: "https://escape-room-crimson-tide-default-rtdb.europe-west1.firebasedatabase.app",
+				projectId: "escape-room-crimson-tide",
+				storageBucket: "escape-room-crimson-tide.firebasestorage.app",
+				messagingSenderId: "812631357927",
+				appId: "1:812631357927:web:6d6cf5a516fff03bf7e542"
+
+
+	</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 OPERAZIONE CRIMSON TIDE - DASHBOARD AMMINISTRATORE 🚨</h1>
+            <p>Sistema di Controllo Centralizzato | Massimo 15 Agenti Simultanei</p>
+            <div class="live-indicator">🔴 LIVE - Sistema di Monitoraggio Attivo</div>
+        </div>
+
+        <!-- Stato del Gioco -->
+        <div class="dashboard-section full-width">
+            <h2>🎮 CONTROLLO OPERAZIONE</h2>
+            
+            <div id="gameStatusDisplay" class="game-status waiting">
+                ⏱️ OPERAZIONE IN ATTESA - Nessun agente registrato
+            </div>
+            
+            <div class="control-panel">
+                <button class="control-btn start-btn" onclick="startGame()" id="startBtn">
+                    ▶️ AVVIA OPERAZIONE
+                </button>
+                <button class="control-btn stop-btn" onclick="pauseGame()" id="pauseBtn">
+                    ⏸️ PAUSA GIOCO
+                </button>
+                <button class="control-btn reset-btn" onclick="resetGame()" id="resetBtn">
+                    🔄 RESET COMPLETO
+                </button>
+                <button class="control-btn stop-btn" onclick="kickAllPlayers()">
+                    🚪 ESPELLI TUTTI
+                </button>
+                <button class="control-btn reset-btn" onclick="exportGameData()">
+                    📊 ESPORTA DATI
+                </button>
+            </div>
+
+            <!-- Timer Globale -->
+            <div class="timer-display">
+                ⏱️ TEMPO OPERAZIONE: <span id="gameTimer">00:00:00</span>
+            </div>
+
+            <!-- Statistiche Generali -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>👥 AGENTI ATTIVI</h3>
+                    <div class="stat-value" id="activePlayersCount">0/15</div>
+                </div>
+                <div class="stat-card">
+                    <h3>🏁 COMPLETAMENTI</h3>
+                    <div class="stat-value" id="finishedCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📊 PUNTEGGIO MEDIO</h3>
+                    <div class="stat-value" id="averageScore">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>⚡ STANZA DIFFICILE</h3>
+                    <div class="stat-value" id="hardestRoom">N/A</div>
+                </div>
+                <div class="stat-card">
+                    <h3>⏱️ TEMPO MEDIO</h3>
+                    <div class="stat-value" id="averageTime">--:--</div>
+                </div>
+                <div class="stat-card">
+                    <h3>💡 AIUTI TOTALI</h3>
+                    <div class="stat-value" id="totalHints">0</div>
+                </div>
+            </div>
+
+            <!-- Statistiche per Stanza -->
+            <h3>📊 PROGRESSO PER STANZA</h3>
+            <div class="room-stats">
+                <div class="room-stat" id="room1Stat">
+                    <div>STANZA 1</div>
+                    <div>Decifratura</div>
+                    <div id="room1Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room2Stat">
+                    <div>STANZA 2</div>
+                    <div>Database</div>
+                    <div id="room2Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room3Stat">
+                    <div>STANZA 3</div>
+                    <div>Tracking</div>
+                    <div id="room3Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room4Stat">
+                    <div>STANZA 4</div>
+                    <div>Hash Rev.</div>
+                    <div id="room4Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room5Stat">
+                    <div>STANZA 5</div>
+                    <div>Mobile</div>
+                    <div id="room5Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room6Stat">
+                    <div>STANZA 6</div>
+                    <div>Timeline</div>
+                    <div id="room6Count">0/0</div>
+                </div>
+                <div class="room-stat" id="room7Stat">
+                    <div>STANZA 7</div>
+                    <div>Link Anal.</div>
+                    <div id="room7Count">0/0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layout Admin -->
+        <div class="admin-panel">
+            <!-- Classifica Live -->
+            <div class="leaderboard">
+                <h2>🏆 CLASSIFICA LIVE</h2>
+                <div id="leaderboardList">
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        Nessun agente ancora registrato
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoraggio Agenti -->
+            <div class="dashboard-section">
+                <h2>🕵️‍♂️ MONITORAGGIO AGENTI</h2>
+                <div style="margin-bottom: 15px;">
+                    <button class="control-btn start-btn" onclick="refreshPlayers()">
+                        🔄 AGGIORNA LIVE
+                    </button>
+                    <button class="control-btn reset-btn" onclick="showDetailedStats()">
+                        📈 STATISTICHE DETTAGLIATE
+                    </button>
+                </div>
+                <div id="playersGrid" class="player-grid">
+                    <!-- I giocatori saranno aggiunti dinamicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sezione Export -->
+        <div class="dashboard-section full-width export-section">
+            <h3>📊 ESPORTAZIONE DATI E REPORT</h3>
+            <div class="control-panel">
+                <button class="control-btn start-btn" onclick="exportCSV()">
+                    📄 CSV COMPLETO
+                </button>
+                <button class="control-btn start-btn" onclick="exportLeaderboard()">
+                    🏆 CLASSIFICA PDF
+                </button>
+                <button class="control-btn start-btn" onclick="exportDetailedReport()">
+                    📋 REPORT DETTAGLIATO
+                </button>
+                <button class="control-btn reset-btn" onclick="clearGameData()">
+                    🗑️ CANCELLA DATI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Statistiche Dettagliate -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <span class="close" onclick="closeStatsModal()">&times;</span>
+            <h3>📈 STATISTICHE DETTAGLIATE</h3>
+            <div id="detailedStatsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // === SISTEMA AMMINISTRATORE ===
+        class AdminSystem {
+            constructor() {
+                this.gameState = null;
+                this.channel = new BroadcastChannel('crimson_tide_game');
+                this.gameStartTime = null;
+                this.gameTimer = null;
+                
+                this.setupEventListeners();
+                this.initializeStorage();
+                this.startSyncLoop();
+            }
+
+            initializeStorage() {
+                // Inizializza localStorage se non esiste
+                if (!localStorage.getItem('crimson_tide_game')) {
+                    localStorage.setItem('crimson_tide_game', JSON.stringify({
+                        players: [],
+                        gameRunning: false,
+                        startTime: null,
+                        adminStartTime: null
+                    }));
+                }
+                this.loadGameState();
+            }
+
+            loadGameState() {
+                try {
+                    this.gameState = JSON.parse(localStorage.getItem('crimson_tide_game') || '{}');
+                    if (!this.gameState.players) this.gameState.players = [];
+                } catch (e) {
+                    console.error('Errore caricamento stato gioco:', e);
+                    this.gameState = { players: [], gameRunning: false, startTime: null };
+                }
+            }
+
+            saveGameState() {
+                localStorage.setItem('crimson_tide_game', JSON.stringify(this.gameState));
+                this.channel.postMessage({
+                    type: 'gameStateUpdate',
+                    data: this.gameState
+                });
+            }
+
+            setupEventListeners() {
+                this.channel.onmessage = (event) => {
+                    switch (event.data.type) {
+                        case 'gameStateUpdate':
+                            this.handleGameStateUpdate(event.data.data);
+                            break;
+                    }
+                };
+            }
+
+            handleGameStateUpdate(newState) {
+                this.gameState = newState;
+                this.updateDisplay();
+            }
+
+            // === CONTROLLI AMMINISTRATORE ===
+            
+            startGame() {
+                if (this.gameState.players.length === 0) {
+                    alert('❌ Nessun agente registrato! Aspetta che almeno un agente si registri.');
+                    return;
+                }
+
+                this.gameState.gameRunning = true;
+                this.gameState.startTime = Date.now();
+                this.gameStartTime = Date.now();
+                
+                // Avvia tutti i giocatori in attesa
+                this.gameState.players.forEach(player => {
+                    if (player.status === 'waiting') {
+                        player.status = 'playing';
+                        player.startTime = Date.now();
+                    }
+                });
+
+                this.saveGameState();
+                this.startGameTimer();
+                
+                // Notifica ai client
+                this.channel.postMessage({
+                    type: 'gameStart'
+                });
+
+                this.updateDisplay();
+                alert('🚀 OPERAZIONE CRIMSON TIDE AVVIATA!\n\nTutti gli agenti possono iniziare l\'investigazione.');
+            }
+
+            pauseGame() {
+                this.gameState.gameRunning = false;
+                
+                // Metti in pausa tutti i giocatori attivi
+                this.gameState.players.forEach(player => {
+                    if (player.status === 'playing') {
+                        player.status = 'waiting';
+                    }
+                });
+
+                this.saveGameState();
+                this.stopGameTimer();
+                
+                // Notifica ai client
+                this.channel.postMessage({
+                    type: 'gameStop'
+                });
+
+                this.updateDisplay();
+                alert('⏸️ Operazione messa in pausa.\n\nTutti gli agenti sono stati notificati.');
+            }
+
+            resetGame() {
+                if (confirm('🔄 ATTENZIONE!\n\nSei sicuro di voler resettare completamente l\'operazione?\n\nTutti i progressi e i dati saranno persi definitivamente.')) {
+                    this.gameState = {
+                        players: [],
+                        gameRunning: false,
+                        startTime: null,
+                        adminStartTime: null
+                    };
+                    
+                    this.gameStartTime = null;
+                    this.stopGameTimer();
+                    
+                    this.saveGameState();
+                    this.updateDisplay();
+                    
+                    alert('✅ Operazione resettata completamente.\n\nIl sistema è pronto per una nuova sessione.');
+                }
+            }
+
+            kickAllPlayers() {
+                if (confirm('🚪 Sei sicuro di voler espellere tutti gli agenti?\n\nQuesto terminerà la sessione corrente.')) {
+                    this.gameState.players = [];
+                    this.gameState.gameRunning = false;
+                    this.gameStartTime = null;
+                    this.stopGameTimer();
+                    
+                    this.saveGameState();
+                    this.updateDisplay();
+                    
+                    alert('✅ Tutti gli agenti sono stati espulsi dalla sessione.');
+                }
+            }
+
+            removePlayer(playerId) {
+                if (confirm('Sei sicuro di voler rimuovere questo agente?')) {
+                    this.gameState.players = this.gameState.players.filter(p => p.id != playerId);
+                    this.saveGameState();
+                    this.updateDisplay();
+                }
+            }
+
+            // === TIMER AMMINISTRATORE ===
+            
+            startGameTimer() {
+                this.stopGameTimer(); // Assicurati che non ci siano timer duplicati
+                this.gameTimer = setInterval(() => {
+                    this.updateGameTimer();
+                }, 1000);
+            }
+
+            stopGameTimer() {
+                if (this.gameTimer) {
+                    clearInterval(this.gameTimer);
+                    this.gameTimer = null;
+                }
+            }
+
+            updateGameTimer() {
+                if (!this.gameStartTime) return;
+                
+                const elapsed = Date.now() - this.gameStartTime;
+                document.getElementById('gameTimer').textContent = this.formatTime(elapsed);
+            }
+
+            formatTime(milliseconds) {
+                const totalSeconds = Math.floor(milliseconds / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // === AGGIORNAMENTO DISPLAY ===
+            
+            updateDisplay() {
+                this.updateGameStatus();
+                this.updatePlayerGrid();
+                this.updateLeaderboard();
+                this.updateStats();
+                this.updateRoomStats();
+            }
+
+            updateGameStatus() {
+                const statusDisplay = document.getElementById('gameStatusDisplay');
+                const startBtn = document.getElementById('startBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+                
+                if (this.gameState.gameRunning) {
+                    statusDisplay.className = 'game-status running';
+                    statusDisplay.innerHTML = '🟢 OPERAZIONE IN CORSO - Agenti in azione';
+                    startBtn.disabled = true;
+                    pauseBtn.disabled = false;
+                } else {
+                    statusDisplay.className = 'game-status waiting';
+                    if (this.gameState.players.length === 0) {
+                        statusDisplay.innerHTML = '⏱️ OPERAZIONE IN ATTESA - Nessun agente registrato';
+                    } else {
+                        statusDisplay.innerHTML = `⏱️ OPERAZIONE IN ATTESA - ${this.gameState.players.length} agenti pronti`;
+                    }
+                    startBtn.disabled = false;
+                    pauseBtn.disabled = true;
+                }
+            }
+
+            updatePlayerGrid() {
+                const grid = document.getElementById('playersGrid');
+                
+                if (this.gameState.players.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #666;">Nessun agente registrato</div>';
+                    return;
+                }
+                
+                grid.innerHTML = this.gameState.players.map(player => {
+                    const completedRooms = Object.values(player.roomProgress || {}).filter(r => r).length;
+                    const completionPercentage = Math.round((completedRooms / 7) * 100);
+                    const elapsedTime = this.getPlayerElapsedTime(player);
+                    
+                    return `
+                        <div class="player-card ${player.status}">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong>🕵️‍♂️ ${player.name}</strong>
+                                <span class="status-indicator status-${player.status}"></span>
+                            </div>
+                            
+                            ${player.team ? `<div style="font-size: 12px; color: #aaa;">🏢 ${player.team}</div>` : ''}
+                            
+                            <div style="margin: 10px 0;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>💯 Punteggio: ${player.score || 1000}</span>
+                                    <span class="room-indicator">Stanza ${player.currentRoom || 1}/7</span>
+                                </div>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${completionPercentage}%"></div>
+                                </div>
+                                <div style="font-size: 12px; color: #aaa;">
+                                    Completamento: ${completionPercentage}% (${completedRooms}/7)
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">
+                                ⏱️ Tempo: ${elapsedTime}
+                                ${player.hintsUsed ? ` | 💡 Aiuti: ${player.hintsUsed}` : ''}
+                                <br>
+                                📊 Status: ${this.getStatusText(player.status)}
+                            </div>
+                            
+                            <div class="player-actions">
+                                <button class="mini-btn danger" onclick="admin.removePlayer('${player.id}')">
+                                    ❌ Rimuovi
+                                </button>
+                                <button class="mini-btn warning" onclick="admin.resetPlayerProgress('${player.id}')">
+                                    🔄 Reset
+                                </button>
+                                <button class="mini-btn success" onclick="admin.viewPlayerDetails('${player.id}')">
+                                    📋 Dettagli
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateLeaderboard() {
+                const leaderboard = document.getElementById('leaderboardList');
+                
+                if (this.gameState.players.length === 0) {
+                    leaderboard.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Nessun agente registrato</div>';
+                    return;
+                }
+                
+                // Ordina per stato e punteggio
+                const sortedPlayers = [...this.gameState.players].sort((a, b) => {
+                    // Prima i finiti, poi per tempo, poi per punteggio
+                    if (a.status === 'finished' && b.status !== 'finished') return -1;
+                    if (b.status === 'finished' && a.status !== 'finished') return 1;
+                    
+                    if (a.status === 'finished' && b.status === 'finished') {
+                        const aTime = (a.finishTime || Date.now()) - (a.startTime || Date.now());
+                        const bTime = (b.finishTime || Date.now()) - (b.startTime || Date.now());
+                        if (aTime !== bTime) return aTime - bTime;
+                    }
+                    
+                    return (b.score || 1000) - (a.score || 1000);
+                });
+                
+                leaderboard.innerHTML = sortedPlayers.map((player, index) => {
+                    const rank = index + 1;
+                    const rankClass = rank === 1 ? 'first' : rank === 2 ? 'second' : rank === 3 ? 'third' : '';
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                    const completedRooms = Object.values(player.roomProgress || {}).filter(r => r).length;
+                    
+                    return `
+                        <div class="leaderboard-item ${rankClass}">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 18px; font-weight: bold; min-width: 40px;">${medal}</span>
+                                <div>
+                                    <div style="font-weight: bold;">${player.name}</div>
+                                    <div style="font-size: 12px; color: #aaa;">
+                                        ${player.team ? `🏢 ${player.team}` : 'Agente Indipendente'}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold; color: #ffaa00;">${player.score || 1000} pts</div>
+                                <div style="font-size: 12px; color: #aaa;">
+                                    ${player.status === 'finished' ? '🏁 Completato' : `📍 Stanza ${player.currentRoom || 1} (${completedRooms}/7)`}
+                                </div>
+                                <div style="font-size: 11px; color: #666;">
+                                    ⏱️ ${this.getPlayerElapsedTime(player)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            updateStats() {
+                const activePlayers = this.gameState.players.filter(p => p.status === 'playing').length;
+                const finishedPlayers = this.gameState.players.filter(p => p.status === 'finished').length;
+                const totalPlayers = this.gameState.players.length;
+                
+                const totalScore = this.gameState.players.reduce((sum, p) => sum + (p.score || 1000), 0);
+                const averageScore = totalPlayers > 0 ? Math.round(totalScore / totalPlayers) : 0;
+                
+                const totalHints = this.gameState.players.reduce((sum, p) => sum + (p.hintsUsed || 0), 0);
+                
+                // Calcola tempo medio dei finiti
+                const finishedWithTime = this.gameState.players.filter(p => p.status === 'finished' && p.startTime && p.finishTime);
+                let averageTime = '--:--';
+                if (finishedWithTime.length > 0) {
+                    const totalTime = finishedWithTime.reduce((sum, p) => sum + (p.finishTime - p.startTime), 0);
+                    const avgMs = totalTime / finishedWithTime.length;
+                    averageTime = this.formatTime(avgMs).substring(3); // Remove hours
+                }
+                
+                // Trova stanza più difficile
+                const roomDifficulty = {};
+                this.gameState.players.forEach(player => {
+                    const currentRoom = player.currentRoom || 1;
+                    for (let room = 1; room <= currentRoom; room++) {
+                        if (!player.roomProgress?.[room]) {
+                            roomDifficulty[room] = (roomDifficulty[room] || 0) + 1;
+                        }
+                    }
+                });
+                
+                const hardestRoom = Object.keys(roomDifficulty).reduce((a, b) => 
+                    roomDifficulty[a] > roomDifficulty[b] ? a : b, 'N/A');
+                
+                document.getElementById('activePlayersCount').textContent = `${activePlayers}/${Math.min(totalPlayers, 15)}`;
+                document.getElementById('finishedCount').textContent = finishedPlayers;
+                document.getElementById('averageScore').textContent = averageScore;
+                document.getElementById('hardestRoom').textContent = hardestRoom !== 'N/A' ? `Stanza ${hardestRoom}` : 'N/A';
+                document.getElementById('averageTime').textContent = averageTime;
+                document.getElementById('totalHints').textContent = totalHints;
+            }
+
+            updateRoomStats() {
+                for (let room = 1; room <= 7; room++) {
+                    const playersInRoom = this.gameState.players.filter(p => (p.currentRoom || 1) >= room).length;
+                    const playersCompleted = this.gameState.players.filter(p => p.roomProgress?.[room]).length;
+                    
+                    const roomStat = document.getElementById(`room${room}Stat`);
+                    const roomCount = document.getElementById(`room${room}Count`);
+                    
+                    if (roomStat && roomCount) {
+                        roomCount.textContent = `${playersCompleted}/${playersInRoom}`;
+                        
+                        // Evidenzia stanza attiva
+                        if (playersInRoom > playersCompleted) {
+                            roomStat.classList.add('active');
+                        } else {
+                            roomStat.classList.remove('active');
+                        }
+                    }
+                }
+            }
+
+            // === UTILITY ===
+            
+            getPlayerElapsedTime(player) {
+                if (!player.startTime) return '00:00:00';
+                const endTime = player.finishTime || Date.now();
+                return this.formatTime(endTime - player.startTime);
+            }
+
+            getStatusText(status) {
+                switch (status) {
+                    case 'waiting': return '⏳ In Attesa';
+                    case 'playing': return '🟢 In Gioco';
+                    case 'finished': return '🏁 Completato';
+                    default: return '❓ Sconosciuto';
+                }
+            }
+
+            resetPlayerProgress(playerId) {
+                if (confirm('Sei sicuro di voler resettare il progresso di questo agente?')) {
+                    const player = this.gameState.players.find(p => p.id == playerId);
+                    if (player) {
+                        player.currentRoom = 1;
+                        player.score = 1000;
+                        player.roomProgress = {
+                            1: false, 2: false, 3: false, 4: false,
+                            5: false, 6: false, 7: false
+                        };
+                        player.hintsUsed = 0;
+                        player.status = 'waiting';
+                        player.startTime = null;
+                        player.finishTime = null;
+                        
+                        this.saveGameState();
+                        this.updateDisplay();
+                    }
+                }
+            }
+
+            viewPlayerDetails(playerId) {
+                const player = this.gameState.players.find(p => p.id == playerId);
+                if (player) {
+                    const completedRooms = Object.values(player.roomProgress || {}).filter(r => r).length;
+                    const roomDetails = [];
+                    for (let i = 1; i <= 7; i++) {
+                        roomDetails.push(`Stanza ${i}: ${player.roomProgress?.[i] ? '✅' : '❌'}`);
+                    }
+                    
+                    alert(`📋 DETTAGLI AGENTE\n\n` +
+                          `👤 Nome: ${player.name}\n` +
+                          `🏢 Squadra: ${player.team || 'Indipendente'}\n` +
+                          `💯 Punteggio: ${player.score || 1000}\n` +
+                          `📍 Stanza Corrente: ${player.currentRoom || 1}/7\n` +
+                          `📊 Completamento: ${completedRooms}/7 (${Math.round((completedRooms/7)*100)}%)\n` +
+                          `💡 Aiuti Usati: ${player.hintsUsed || 0}\n` +
+                          `⏱️ Tempo: ${this.getPlayerElapsedTime(player)}\n` +
+                          `🔄 Status: ${this.getStatusText(player.status)}\n\n` +
+                          `PROGRESSO DETTAGLIATO:\n${roomDetails.join('\n')}`);
+                }
+            }
+
+            // === SYNC LOOP ===
+            
+            startSyncLoop() {
+                setInterval(() => {
+                    this.loadGameState();
+                    this.updateDisplay();
+                }, 2000);
+            }
+        }
+
+        // === FUNZIONI GLOBALI ===
+        let admin;
+
+        function startGame() {
+            admin.startGame();
+        }
+
+        function pauseGame() {
+            admin.pauseGame();
+        }
+
+        function resetGame() {
+            admin.resetGame();
+        }
+
+        function kickAllPlayers() {
+            admin.kickAllPlayers();
+        }
+
+        function refreshPlayers() {
+            admin.loadGameState();
+            admin.updateDisplay();
+            alert('🔄 Dati aggiornati dal server centrale.');
+        }
+
+        function exportGameData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                gameState: admin.gameState,
+                summary: {
+                    totalPlayers: admin.gameState.players.length,
+                    finishedPlayers: admin.gameState.players.filter(p => p.status === 'finished').length,
+                    gameRunning: admin.gameState.gameRunning,
+                    totalScore: admin.gameState.players.reduce((sum, p) => sum + (p.score || 1000), 0)
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crimson_tide_data_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📊 Dati esportati con successo!\n\nFile salvato con timestamp della sessione.');
+        }
+
+        function exportCSV() {
+            let csv = 'Nome,Squadra,Punteggio,Stanza,Completamento,Aiuti,Tempo,Status\n';
+            
+            admin.gameState.players.forEach(player => {
+                const completedRooms = Object.values(player.roomProgress || {}).filter(r => r).length;
+                const completionPercentage = Math.round((completedRooms / 7) * 100);
+                const elapsedTime = admin.getPlayerElapsedTime(player);
+                
+                csv += `"${player.name}","${player.team || ''}",${player.score || 1000},${player.currentRoom || 1},"${completionPercentage}%",${player.hintsUsed || 0},"${elapsedTime}","${admin.getStatusText(player.status)}"\n`;
+            });
+            
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crimson_tide_leaderboard_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📄 Classifica CSV esportata!');
+        }
+
+        function exportLeaderboard() {
+            alert('🏆 Funzione PDF in sviluppo.\nUsa l\'esportazione CSV per ora.');
+        }
+
+        function exportDetailedReport() {
+            const players = admin.gameState.players;
+            const finishedPlayers = players.filter(p => p.status === 'finished');
+            
+            let report = `OPERAZIONE CRIMSON TIDE - REPORT DETTAGLIATO\n`;
+            report += `Generato: ${new Date().toLocaleString('it-IT')}\n\n`;
+            report += `STATISTICHE GENERALI:\n`;
+            report += `- Agenti Totali: ${players.length}\n`;
+            report += `- Agenti Completati: ${finishedPlayers.length}\n`;
+            report += `- Tasso Completamento: ${players.length > 0 ? Math.round((finishedPlayers.length / players.length) * 100) : 0}%\n`;
+            report += `- Punteggio Medio: ${players.length > 0 ? Math.round(players.reduce((sum, p) => sum + (p.score || 1000), 0) / players.length) : 0}\n\n`;
+            
+            report += `CLASSIFICA FINALE:\n`;
+            const sortedPlayers = [...players].sort((a, b) => {
+                if (a.status === 'finished' && b.status !== 'finished') return -1;
+                if (b.status === 'finished' && a.status !== 'finished') return 1;
+                return (b.score || 1000) - (a.score || 1000);
+            });
+            
+            sortedPlayers.forEach((player, index) => {
+                const rank = index + 1;
+                const completedRooms = Object.values(player.roomProgress || {}).filter(r => r).length;
+                report += `${rank}. ${player.name} ${player.team ? `(${player.team})` : ''}\n`;
+                report += `   Punteggio: ${player.score || 1000} | Stanze: ${completedRooms}/7 | Tempo: ${admin.getPlayerElapsedTime(player)}\n\n`;
+            });
+            
+            const blob = new Blob([report], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `crimson_tide_report_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📋 Report dettagliato esportato!');
+        }
+
+        function clearGameData() {
+            if (confirm('🗑️ ATTENZIONE!\n\nQuesto cancellerà TUTTI i dati salvati in modo permanente.\n\nSei assolutamente sicuro?')) {
+                localStorage.removeItem('crimson_tide_game');
+                admin.initializeStorage();
+                admin.updateDisplay();
+                alert('✅ Tutti i dati sono stati cancellati.');
+            }
+        }
+
+        function showDetailedStats() {
+            const modal = document.getElementById('statsModal');
+            const content = document.getElementById('detailedStatsContent');
+            
+            let html = '<div style="color: #00aaff;">';
+            
+            // Statistiche per stanza
+            html += '<h4>📊 ANALISI PER STANZA</h4><div style="margin: 15px 0;">';
+            for (let room = 1; room <= 7; room++) {
+                const playersAtRoom = admin.gameState.players.filter(p => (p.currentRoom || 1) >= room).length;
+                const playersCompleted = admin.gameState.players.filter(p => p.roomProgress?.[room]).length;
+                const successRate = playersAtRoom > 0 ? Math.round((playersCompleted / playersAtRoom) * 100) : 0;
+                
+                html += `<div style="margin: 8px 0; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 5px;">`;
+                html += `<strong>Stanza ${room}:</strong> ${playersCompleted}/${playersAtRoom} completata (${successRate}%)`;
+                html += `</div>`;
+            }
+            html += '</div>';
+            
+            // Top performers
+            const topPlayers = [...admin.gameState.players]
+                .sort((a, b) => (b.score || 1000) - (a.score || 1000))
+                .slice(0, 3);
+                
+            html += '<h4>🏆 TOP PERFORMERS</h4><div style="margin: 15px 0;">';
+            topPlayers.forEach((player, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+                html += `<div style="margin: 8px 0; padding: 8px; background: rgba(255,170,0,0.1); border-radius: 5px;">`;
+                html += `${medal} <strong>${player.name}</strong> - ${player.score || 1000} punti`;
+                html += `</div>`;
+            });
+            html += '</div>';
+            
+            html += '</div>';
+            content.innerHTML = html;
+            modal.style.display = 'block';
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').style.display = 'none';
+        }
+
+        // === INIZIALIZZAZIONE ===
+        document.addEventListener('DOMContentLoaded', function() {
+            admin = new AdminSystem();
+            admin.updateDisplay();
+            
+            // Aggiorna ogni secondo il timer se il gioco è in corso
+            setInterval(() => {
+                if (admin.gameState.gameRunning && admin.gameStartTime) {
+                    admin.updateGameTimer();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
